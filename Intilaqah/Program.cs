@@ -1,5 +1,9 @@
 using Intilaqah.Data;
+using Intilaqah.Models;
+using Intilaqah.Repositories;
+using Intilaqah.Repositories.Interfaces;
 using Intilaqah.Services;
+using Intilaqah.UnitOfWork;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,13 +15,23 @@ builder.Services.AddScoped<ITenantResolver, TenantResolver>();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+// Identity with custom Role
+builder.Services.AddIdentity<ApplicationUser, AppRole>(options =>
 {
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 8;
+    options.Password.RequireNonAlphanumeric = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
+
+//unitofwork & repositories
+builder.Services.AddScoped<ITenantRepository, TenantRepository>();
+builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+builder.Services.AddScoped<IPlanRepository, PlanRepository>();
+builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
+builder.Services.AddScoped<IPermissionRepository, PermissionRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

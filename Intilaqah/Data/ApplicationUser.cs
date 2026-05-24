@@ -6,6 +6,7 @@ namespace Intilaqah.Data
     {
         public Guid? TenantId { get; set; }
         public string? FullName { get; set; }
-        public string Role { get; set; } = "Employee"; // SuperAdmin / CompanyAdmin / Employee
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
