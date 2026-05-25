@@ -6,6 +6,7 @@ using Intilaqah.Services;
 using Intilaqah.UnitOfWork;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Intilaqah.Infrastructure.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +24,17 @@ builder.Services.AddIdentity<ApplicationUser, AppRole>(options =>
     options.Password.RequireNonAlphanumeric = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders();
+.AddDefaultTokenProviders()
+.AddClaimsPrincipalFactory<CustomClaimsFactory>();
+
+builder.Services.ConfigureApplicationCookie(options => {
+    options.LoginPath         = "/Account/Login";
+    options.LogoutPath        = "/Account/Logout";
+    options.AccessDeniedPath  = "/Account/Forbidden";
+    options.ExpireTimeSpan    = TimeSpan.FromHours(8);
+    options.SlidingExpiration = true;
+    options.Cookie.HttpOnly   = true;
+});
 
 //unitofwork & repositories
 builder.Services.AddScoped<ITenantRepository, TenantRepository>();
@@ -33,10 +44,27 @@ builder.Services.AddScoped<IDocumentRepository, DocumentRepository>();
 builder.Services.AddScoped<IPermissionRepository, PermissionRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+// Register Custom Claims Factory (Removed, using AddClaimsPrincipalFactory instead)
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+// Seed Database
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        await DbSeeder.SeedAsync(services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database.");
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

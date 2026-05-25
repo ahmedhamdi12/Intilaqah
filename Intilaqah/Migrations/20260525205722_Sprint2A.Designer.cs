@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Intilaqah.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260524045441_Phaseone")]
-    partial class Phaseone
+    [Migration("20260525205722_Sprint2A")]
+    partial class Sprint2A
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

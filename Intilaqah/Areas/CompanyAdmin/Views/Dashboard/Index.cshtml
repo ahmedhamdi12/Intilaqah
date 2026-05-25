@@ -1,0 +1,77 @@
+@{
+    ViewData["Title"] = "لوحة تحكم المنشأة";
+}
+
+@if (ViewBag.ExpiringDocs > 0)
+{
+    <div class="alert alert-warning d-flex align-items-center mb-4 il-alert" role="alert">
+        <i class="ti ti-alert-circle me-2" style="font-size: 1.5rem;"></i>
+        <div>
+            يوجد <strong>@ViewBag.ExpiringDocs</strong> وثيقة تنتهي قريباً. يرجى تجديدها لتجنب الغرامات.
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-success d-flex align-items-center mb-4 il-alert" role="alert">
+        <i class="ti ti-check me-2" style="font-size: 1.5rem;"></i>
+        <div>لا توجد تنبيهات عاجلة.</div>
+    </div>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="il-kpi">
+            <h6 class="text-muted">إجمالي الموظفين</h6>
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0 text-primary">@ViewBag.TotalEmployees</h3>
+                <i class="ti ti-users text-primary" style="font-size: 2rem;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="il-kpi">
+            <h6 class="text-muted">نسبة التوطين (@ViewBag.NitaqatLabel)</h6>
+            <div class="d-flex justify-content-between align-items-center">
+                @{
+                    string pctColor = ViewBag.SaudizationPct >= 30 ? "text-success" : "text-danger";
+                }
+                <h3 class="mb-0 @pctColor">@ViewBag.SaudizationPct.ToString("0.0")%</h3>
+                <i class="ti ti-chart-pie @pctColor" style="font-size: 2rem;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="il-kpi">
+            <h6 class="text-muted">وثائق منتهية/قريبة</h6>
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0 text-warning">@ViewBag.ExpiringDocs</h3>
+                <i class="ti ti-file-alert text-warning" style="font-size: 2rem;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="il-kpi">
+            <h6 class="text-muted">رواتب الشهر الحالي</h6>
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0 text-secondary">—</h3>
+                <i class="ti ti-cash text-secondary" style="font-size: 2rem;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="il-card p-4">
+            <div class="il-card-header">
+                <h5 class="mb-0 fw-bold">نظرة عامة على الموظفين</h5>
+                <button class="btn btn-sm btn-il-outline">إضافة موظف</button>
+            </div>
+            <div class="text-center py-5">
+                <i class="ti ti-users text-muted mb-2" style="font-size: 3rem; opacity: 0.5;"></i>
+                <h5 class="text-muted">جدول الموظفين سيظهر هنا</h5>
+            </div>
+        </div>
+    </div>
+</div>

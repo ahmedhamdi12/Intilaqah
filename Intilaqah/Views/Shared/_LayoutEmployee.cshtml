@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - انطلاقة HRMS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/intilaqah.css" asp-append-version="true" />
+    <style>
+        :root {
+            --il-primary: #0f766e;
+            --il-sidebar-bg: #0f3330;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+    
+    <header class="il-topbar px-3">
+        <div class="d-flex align-items-center h-100 w-100">
+            <div class="brand-area d-flex align-items-center" style="width: var(--il-sidebar-w);">
+                <button id="sidebarToggle" class="btn btn-sm btn-light d-lg-none me-2">
+                    <i class="ti ti-menu-2"></i>
+                </button>
+                <i class="ti ti-chart-pie-3 text-warning me-2 fs-4"></i>
+                <h5 class="mb-0 fw-bold text-primary">انطلاقة HRMS</h5>
+            </div>
+            
+            <div class="ms-auto d-flex align-items-center">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="avatar-circle me-2 bg-primary text-white">
+                            <i class="ti ti-user"></i>
+                        </div>
+                        <span class="d-none d-md-inline fw-medium">@User.FindFirst("FullName")?.Value</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                        <li>
+                            <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="ti ti-logout me-2"></i>تسجيل الخروج
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <aside class="il-sidebar">
+        <div class="p-3 text-white border-bottom border-secondary mb-3">
+            <h6 class="fw-bold mb-1">بوابة الموظف</h6>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link" href="/Employee/Dashboard"><i class="ti ti-dashboard me-2"></i>الرئيسية</a></li>
+            <li class="nav-item"><a class="nav-link" href="/Employee/Profile"><i class="ti ti-user me-2"></i>الملف الشخصي</a></li>
+            <li class="nav-item"><a class="nav-link" href="/Employee/Documents"><i class="ti ti-id me-2"></i>الوثائق <span class="badge bg-warning ms-auto">0</span></a></li>
+            <li class="nav-item"><a class="nav-link" href="/Employee/Payslips"><i class="ti ti-receipt me-2"></i>مسيرات الرواتب</a></li>
+            <li class="nav-item"><a class="nav-link" href="/Employee/Leaves"><i class="ti ti-calendar-off me-2"></i>الإجازات</a></li>
+            <li class="nav-item"><a class="nav-link" href="/Employee/Advances"><i class="ti ti-coin me-2"></i>السلف</a></li>
+            <li class="nav-item"><a class="nav-link" href="/Employee/Certificates"><i class="ti ti-certificate me-2"></i>الشهادات</a></li>
+        </ul>
+    </aside>
+
+    <main class="il-main">
+        @if (TempData["Success"] != null)
+        {
+            <div class="il-toast alert alert-success d-flex align-items-center" role="alert">
+                <i class="ti ti-check me-2 fs-5"></i> @TempData["Success"]
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="il-toast alert alert-danger d-flex align-items-center" role="alert">
+                <i class="ti ti-alert-circle me-2 fs-5"></i> @TempData["Error"]
+            </div>
+        }
+
+        @RenderBody()
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/intilaqah.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

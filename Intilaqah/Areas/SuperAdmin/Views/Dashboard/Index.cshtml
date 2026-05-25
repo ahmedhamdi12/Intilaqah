@@ -1,0 +1,57 @@
+@{
+    ViewData["Title"] = "لوحة تحكم المدير الأعلى";
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="il-kpi">
+            <h6 class="text-muted">الشركات النشطة</h6>
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0 text-success">@ViewBag.ActiveTenantsCount</h3>
+                <i class="ti ti-building text-success" style="font-size: 2rem;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="il-kpi">
+            <h6 class="text-muted">الشركات المجمدة</h6>
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0 text-danger">@ViewBag.FrozenTenantsCount</h3>
+                <i class="ti ti-snowflake text-danger" style="font-size: 2rem;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="il-kpi">
+            <h6 class="text-muted">عقود تنتهي قريباً</h6>
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0 text-warning">@ViewBag.ExpiringContracts</h3>
+                <i class="ti ti-alert-triangle text-warning" style="font-size: 2rem;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="il-kpi">
+            <h6 class="text-muted">عدد الباقات</h6>
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="mb-0 text-primary">3</h3>
+                <i class="ti ti-packages text-primary" style="font-size: 2rem;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="il-card p-4">
+            <div class="il-card-header">
+                <h5 class="mb-0 fw-bold">الشركات المضافة حديثاً</h5>
+                <a href="/SuperAdmin/Companies" class="btn btn-sm btn-il-outline">عرض الكل</a>
+            </div>
+            <div class="text-center py-5">
+                <i class="ti ti-table text-muted mb-2" style="font-size: 3rem; opacity: 0.5;"></i>
+                <h5 class="text-muted">جداول الشركات ستظهر هنا — Sprint 2B</h5>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,4 +1,4 @@
-﻿using Intilaqah.Data;
+using Intilaqah.Data;
 using Intilaqah.Models;
 using Intilaqah.Repositories.Interfaces;
 using Intilaqah.Services;
@@ -11,10 +11,10 @@ namespace Intilaqah.Repositories
         public EmployeeRepository(ApplicationDbContext context, ITenantResolver tenantResolver) : base(context, tenantResolver) { }
 
         public async Task<int> CountSaudiAsync()
-        => await _dbSet.CountAsync(e => e.Nationality == Nationality.Saudi && e.IsActive);
+        => await _dbSet.CountAsync(e => e.Nationality == NationalityType.Saudi && e.IsActive);
 
         public async Task<int> CountNonSaudiAsync()
-            => await _dbSet.CountAsync(e => e.Nationality == Nationality.NonSaudi && e.IsActive);
+            => await _dbSet.CountAsync(e => e.Nationality == NationalityType.NonSaudi && e.IsActive);
 
         public async Task<decimal> GetSaudizationPercentageAsync()
         {
