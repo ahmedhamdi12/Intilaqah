@@ -1,4 +1,4 @@
-﻿using Intilaqah.Data;
+using Intilaqah.Data;
 using Intilaqah.Repositories;
 using Intilaqah.Repositories.Interfaces;
 using Intilaqah.Services;
@@ -15,6 +15,8 @@ namespace Intilaqah.UnitOfWork
         public IPlanRepository Plans { get; }
         public IDocumentRepository Documents { get; }
         public IPermissionRepository Permissions { get; }
+        public IDepartmentRepository Departments { get; }
+        public IContractRepository   Contracts   { get; }
 
         public UnitOfWork(ApplicationDbContext context, ITenantResolver tenantResolver)
         {
@@ -25,6 +27,8 @@ namespace Intilaqah.UnitOfWork
             Plans = new PlanRepository(context, tenantResolver);
             Documents = new DocumentRepository(context, tenantResolver);
             Permissions = new PermissionRepository(context);
+            Departments = new DepartmentRepository(context, tenantResolver);
+            Contracts   = new ContractRepository(context, tenantResolver);
         }
 
         public async Task<int> SaveChangesAsync()

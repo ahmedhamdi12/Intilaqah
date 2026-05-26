@@ -1,0 +1,171 @@
+@model Intilaqah.Models.ViewModels.CompanyAdmin.EmployeeCreateVM
+@{
+    ViewData["Title"] = "إضافة موظف جديد";
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">إضافة موظف جديد</h1>
+    </div>
+    <div class="page-actions">
+        <a href="/CompanyAdmin/Employees" class="btn-il btn-il-outline">
+            <i class="ti ti-arrow-right"></i> رجوع
+        </a>
+    </div>
+</div>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="row g-3">
+        @* ── Personal Info ── *@
+        <div class="col-12">
+            <div class="il-card">
+                <div class="il-card-header">
+                    <h2 class="card-title">
+                        <i class="ti ti-user"></i> البيانات الشخصية
+                    </h2>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="FullNameAr" class="il-form-label"></label>
+                        <input asp-for="FullNameAr" class="il-form-control"
+                               placeholder="محمد أحمد العمري" />
+                        <span asp-validation-for="FullNameAr"
+                              class="text-danger" style="font-size:12px"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="FullNameEn" class="il-form-label"></label>
+                        <input asp-for="FullNameEn" class="il-form-control"
+                               placeholder="Mohammed Ahmed Al-Omari" />
+                        <span asp-validation-for="FullNameEn"
+                              class="text-danger" style="font-size:12px"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="NationalId" class="il-form-label"></label>
+                        <input asp-for="NationalId" class="il-form-control"
+                               placeholder="10 أرقام" maxlength="10" />
+                        <span asp-validation-for="NationalId"
+                              class="text-danger" style="font-size:12px"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Nationality" class="il-form-label"></label>
+                        <select asp-for="Nationality"
+                                asp-items="Model.Nationalities"
+                                class="il-form-control"></select>
+                        <span asp-validation-for="Nationality"
+                              class="text-danger" style="font-size:12px"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* ── Job Info ── *@
+        <div class="col-12">
+            <div class="il-card">
+                <div class="il-card-header">
+                    <h2 class="card-title">
+                        <i class="ti ti-briefcase"></i> البيانات الوظيفية
+                    </h2>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="JobTitle" class="il-form-label"></label>
+                        <input asp-for="JobTitle" class="il-form-control"
+                               placeholder="مثال: محاسب أول" />
+                        <span asp-validation-for="JobTitle"
+                              class="text-danger" style="font-size:12px"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="DepartmentId" class="il-form-label"></label>
+                        <select asp-for="DepartmentId"
+                                asp-items="Model.Departments"
+                                class="il-form-control">
+                            <option value="">-- اختر القسم --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="HireDate" class="il-form-label"></label>
+                        <input asp-for="HireDate" type="date"
+                               class="il-form-control" />
+                        <span asp-validation-for="HireDate"
+                              class="text-danger" style="font-size:12px"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="EmploymentType" class="il-form-label"></label>
+                        <select asp-for="EmploymentType"
+                                asp-items="Model.EmploymentTypes"
+                                class="il-form-control"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* ── Salary + Contract ── *@
+        <div class="col-12">
+            <div class="il-card">
+                <div class="il-card-header">
+                    <h2 class="card-title">
+                        <i class="ti ti-receipt"></i> الراتب والعقد
+                    </h2>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label asp-for="BasicSalary" class="il-form-label"></label>
+                        <input asp-for="BasicSalary" type="number"
+                               class="il-form-control" placeholder="0.00" />
+                        <span asp-validation-for="BasicSalary"
+                              class="text-danger" style="font-size:12px"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="HousingAllowance" class="il-form-label"></label>
+                        <input asp-for="HousingAllowance" type="number"
+                               class="il-form-control" placeholder="0.00" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="TransportAllowance" class="il-form-label"></label>
+                        <input asp-for="TransportAllowance" type="number"
+                               class="il-form-control" placeholder="0.00" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="ContractType" class="il-form-label"></label>
+                        <select asp-for="ContractType"
+                                asp-items="Model.ContractTypes"
+                                class="il-form-control"
+                                id="contractTypeSelect"></select>
+                    </div>
+                    <div class="col-md-6" id="endDateWrapper">
+                        <label asp-for="ContractEndDate" class="il-form-label"></label>
+                        <input asp-for="ContractEndDate" type="date"
+                               class="il-form-control" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* ── Submit ── *@
+        <div class="col-12">
+            <div class="d-flex gap-2 justify-content-end">
+                <a href="/CompanyAdmin/Employees"
+                   class="btn-il btn-il-outline">إلغاء</a>
+                <button type="submit" class="btn-il btn-il-primary">
+                    <i class="ti ti-device-floppy"></i> حفظ الموظف
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+<partial name="_ValidationScriptsPartial" />
+<script>
+// Show/hide contract end date based on contract type
+const sel = document.getElementById('contractTypeSelect');
+const wrapper = document.getElementById('endDateWrapper');
+function toggleEndDate() {
+    wrapper.style.display = sel.value === 'Unlimited' ? 'none' : '';
+}
+sel?.addEventListener('change', toggleEndDate);
+toggleEndDate();
+</script>
+}

@@ -1,0 +1,184 @@
+@{
+    ViewData["Title"] = "ملف الموظف";
+    var emp  = ViewBag.Employee  as Intilaqah.Models.Employee;
+    var con  = ViewBag.Contract  as Intilaqah.Models.Contract;
+    var docs = ViewBag.Documents as IEnumerable<Intilaqah.Models.Document>
+               ?? Enumerable.Empty<Intilaqah.Models.Document>();
+    var dept = ViewBag.Department as string ?? "—";
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">ملف الموظف: @emp?.FullNameAr</h1>
+        <div class="page-subtitle">الرقم الوظيفي: @emp?.EmployeeCode</div>
+    </div>
+    <div class="page-actions">
+        <a href="/CompanyAdmin/Employees" class="btn-il btn-il-outline">
+            <i class="ti ti-arrow-right"></i> عودة للقائمة
+        </a>
+        <a href="/CompanyAdmin/Employees/Edit/@emp?.Id" class="btn-il btn-il-primary">
+            <i class="ti ti-edit"></i> تعديل البيانات
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Personal Information -->
+    <div class="col-md-6">
+        <div class="il-card h-100">
+            <div class="il-card-header">
+                <h3 class="card-title"><i class="ti ti-user me-2"></i> البيانات الشخصية</h3>
+            </div>
+            <div class="p-3">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted" style="width: 40%">الاسم بالعربية:</td>
+                            <td class="fw-bold">@emp?.FullNameAr</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">الاسم بالإنجليزية:</td>
+                            <td class="fw-bold">@emp?.FullNameEn</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">رقم الهوية/الإقامة:</td>
+                            <td class="fw-bold">@emp?.NationalId</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">الجنسية:</td>
+                            <td class="fw-bold">@(emp?.Nationality == Intilaqah.Models.NationalityType.Saudi ? "سعودي" : "وافد")</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">الحالة:</td>
+                            <td class="fw-bold">
+                                <span class="il-badge @(emp?.IsActive == true ? "active" : "inactive")">
+                                    @(emp?.IsActive == true ? "نشط" : "غير نشط")
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Information -->
+    <div class="col-md-6">
+        <div class="il-card h-100">
+            <div class="il-card-header">
+                <h3 class="card-title"><i class="ti ti-briefcase me-2"></i> البيانات الوظيفية</h3>
+            </div>
+            <div class="p-3">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted" style="width: 40%">المسمى الوظيفي:</td>
+                            <td class="fw-bold">@emp?.JobTitle</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">القسم:</td>
+                            <td class="fw-bold">@dept</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">نوع التوظيف:</td>
+                            <td class="fw-bold">
+                                @(emp?.EmploymentType == Intilaqah.Models.EmploymentType.FullTime ? "دوام كامل" : 
+                                  emp?.EmploymentType == Intilaqah.Models.EmploymentType.PartTime ? "دوام جزئي" : "عن بعد")
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">تاريخ المباشرة:</td>
+                            <td class="fw-bold">@emp?.HireDate.ToString("yyyy-MM-dd")</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contract & Salary -->
+    <div class="col-md-6">
+        <div class="il-card h-100">
+            <div class="il-card-header">
+                <h3 class="card-title"><i class="ti ti-receipt me-2"></i> العقد والراتب</h3>
+            </div>
+            <div class="p-3">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted" style="width: 40%">نوع العقد:</td>
+                            <td class="fw-bold">
+                                @(con?.ContractType == Intilaqah.Models.ContractType.Unlimited ? "غير محدد المدة" :
+                                  con?.ContractType == Intilaqah.Models.ContractType.FixedTerm ? "محدد المدة" :
+                                  con?.ContractType == Intilaqah.Models.ContractType.Probation ? "تجريبي" : "موسمي")
+                            </td>
+                        </tr>
+                        @if (con?.ContractType != Intilaqah.Models.ContractType.Unlimited)
+                        {
+                            <tr>
+                                <td class="text-muted">تاريخ الانتهاء:</td>
+                                <td class="fw-bold">@con?.EndDate?.ToString("yyyy-MM-dd")</td>
+                            </tr>
+                        }
+                        <tr>
+                            <td class="text-muted">الراتب الأساسي:</td>
+                            <td class="fw-bold">@emp?.BasicSalary.ToString("N2") ر.س</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">بدل السكن:</td>
+                            <td class="fw-bold">@((con?.HousingAllowance ?? 0).ToString("N2")) ر.س</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">بدل النقل:</td>
+                            <td class="fw-bold">@((con?.TransportAllowance ?? 0).ToString("N2")) ر.س</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted text-primary fw-bold">إجمالي الراتب:</td>
+                            <td class="fw-bold text-primary">@((emp?.BasicSalary + (con?.HousingAllowance ?? 0) + (con?.TransportAllowance ?? 0))?.ToString("N2")) ر.س</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documents -->
+    <div class="col-md-6">
+        <div class="il-card h-100">
+            <div class="il-card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title mb-0"><i class="ti ti-files me-2"></i> وثائق الموظف</h3>
+                <a href="#" class="btn btn-sm btn-il-outline">إضافة وثيقة</a>
+            </div>
+            <div class="p-3">
+                @if (docs.Any())
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach(var doc in docs)
+                        {
+                            var daysLeft = (doc.ExpiryDate?.Date - DateTime.Today)?.TotalDays ?? 0;
+                            var statusClass = doc.ExpiryDate == null ? "text-muted" : (daysLeft < 0 ? "text-danger" : (daysLeft <= 30 ? "text-warning" : "text-success"));
+                            
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <h6 class="mb-0">@doc.DocType</h6>
+                                </div>
+                                <div class="text-end">
+                                    <div class="@statusClass fw-bold">
+                                        تاريخ الانتهاء: @(doc.ExpiryDate?.ToString("yyyy-MM-dd") ?? "غير محدد")
+                                    </div>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="text-center py-4 text-muted">
+                        <i class="ti ti-file-x mb-2" style="font-size: 2rem; opacity: 0.5"></i>
+                        <p class="mb-0">لا توجد وثائق مضافة لهذا الموظف.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

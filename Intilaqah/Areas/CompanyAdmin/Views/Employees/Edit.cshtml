@@ -1,0 +1,129 @@
+@model Intilaqah.Models.ViewModels.CompanyAdmin.EmployeeEditVM
+@{
+    ViewData["Title"] = "تعديل بيانات الموظف";
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">تعديل: @Model.FullNameAr</h1>
+        <div class="page-subtitle">@Model.EmployeeCode</div>
+    </div>
+    <div class="page-actions">
+        <a href="/CompanyAdmin/Employees" class="btn-il btn-il-outline">
+            <i class="ti ti-arrow-right"></i> رجوع
+        </a>
+    </div>
+</div>
+
+<form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+    <input asp-for="Id" type="hidden" />
+    <input asp-for="EmployeeCode" type="hidden" />
+
+    <div class="row g-3">
+        <div class="col-12">
+            <div class="il-card">
+                <div class="il-card-header">
+                    <h2 class="card-title">
+                        <i class="ti ti-user"></i> البيانات الشخصية
+                    </h2>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="FullNameAr" class="il-form-label"></label>
+                        <input asp-for="FullNameAr" class="il-form-control" />
+                        <span asp-validation-for="FullNameAr"
+                              class="text-danger" style="font-size:12px"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="FullNameEn" class="il-form-label"></label>
+                        <input asp-for="FullNameEn" class="il-form-control" />
+                        <span asp-validation-for="FullNameEn"
+                              class="text-danger" style="font-size:12px"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="NationalId" class="il-form-label"></label>
+                        <input asp-for="NationalId" class="il-form-control" />
+                        <span asp-validation-for="NationalId"
+                              class="text-danger" style="font-size:12px"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Nationality" class="il-form-label"></label>
+                        <select asp-for="Nationality"
+                                asp-items="Model.Nationalities"
+                                class="il-form-control"></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="il-card">
+                <div class="il-card-header">
+                    <h2 class="card-title">
+                        <i class="ti ti-briefcase"></i> البيانات الوظيفية
+                    </h2>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="JobTitle" class="il-form-label"></label>
+                        <input asp-for="JobTitle" class="il-form-control" />
+                        <span asp-validation-for="JobTitle"
+                              class="text-danger" style="font-size:12px"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="DepartmentId" class="il-form-label"></label>
+                        <select asp-for="DepartmentId"
+                                asp-items="Model.Departments"
+                                class="il-form-control">
+                            <option value="">-- اختر القسم --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="HireDate" class="il-form-label"></label>
+                        <input asp-for="HireDate" type="date" class="il-form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="EmploymentType" class="il-form-label"></label>
+                        <select asp-for="EmploymentType"
+                                asp-items="Model.EmploymentTypes"
+                                class="il-form-control"></select>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="BasicSalary" class="il-form-label"></label>
+                        <input asp-for="BasicSalary" type="number" class="il-form-control" />
+                        <span asp-validation-for="BasicSalary"
+                              class="text-danger" style="font-size:12px"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mt-4 pt-2">
+                            <div class="form-check">
+                                <input asp-for="IsActive"
+                                       class="form-check-input" type="checkbox" />
+                                <label asp-for="IsActive"
+                                       class="form-check-label"
+                                       style="font-family:'Tajawal',sans-serif">
+                                    الموظف نشط
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="d-flex gap-2 justify-content-end">
+                <a href="/CompanyAdmin/Employees"
+                   class="btn-il btn-il-outline">إلغاء</a>
+                <button type="submit" class="btn-il btn-il-primary">
+                    <i class="ti ti-device-floppy"></i> حفظ التعديلات
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+<partial name="_ValidationScriptsPartial" />
+}

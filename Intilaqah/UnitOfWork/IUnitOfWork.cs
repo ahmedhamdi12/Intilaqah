@@ -1,4 +1,4 @@
-﻿using Intilaqah.Repositories.Interfaces;
+using Intilaqah.Repositories.Interfaces;
 
 namespace Intilaqah.UnitOfWork
 {
@@ -9,6 +9,8 @@ namespace Intilaqah.UnitOfWork
         IPlanRepository Plans { get; }
         IDocumentRepository Documents { get; }
         IPermissionRepository Permissions { get; }
+        IDepartmentRepository Departments { get; }
+        IContractRepository   Contracts   { get; }
 
         Task<int> SaveChangesAsync();
     }
