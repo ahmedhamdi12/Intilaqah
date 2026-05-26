@@ -1,0 +1,73 @@
+@model Intilaqah.Models.ViewModels.SuperAdmin.InviteUserVM
+
+@{
+    ViewData["Title"] = $"إضافة مستخدم جديد لـ {Model.CompanyName}";
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/SuperAdmin/Users">المستخدمون</a></li>
+        <li class="breadcrumb-item"><a href="/SuperAdmin/Users/CompanyUsers?tenantId=@Model.TenantId">@Model.CompanyName</a></li>
+        <li class="breadcrumb-item active" aria-current="page">دعوة مستخدم</li>
+    </ol>
+</nav>
+
+<div class="il-page-header mb-4">
+    <h3 class="mb-1 fw-bold">إضافة مستخدم جديد لـ @Model.CompanyName</h3>
+</div>
+
+<div class="alert alert-info d-flex align-items-center mb-4" role="alert">
+    <i class="ti ti-info-circle fs-4 me-2"></i>
+    <div>
+        الشركة تستخدم <strong>@Model.CurrentUserCount</strong> من أصل <strong>@Model.MaxUsers</strong> مستخدم
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm il-card">
+    <div class="card-body p-4">
+        <form asp-action="Invite" method="post">
+            <input type="hidden" asp-for="TenantId" />
+            
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label asp-for="FullName" class="form-label fw-bold"></label>
+                    <input asp-for="FullName" class="form-control il-form-control" />
+                    <span asp-validation-for="FullName" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Email" class="form-label fw-bold"></label>
+                    <input asp-for="Email" class="form-control il-form-control" dir="ltr" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label asp-for="Password" class="form-label fw-bold"></label>
+                    <input asp-for="Password" class="form-control il-form-control" type="password" dir="ltr" />
+                    <div class="form-text">يجب أن تكون 8 أحرف على الأقل</div>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="RoleName" class="form-label fw-bold"></label>
+                    <select asp-for="RoleName" class="form-select il-form-control">
+                        <option value="CompanyAdmin">مدير المنشأة</option>
+                        <option value="Employee">موظف</option>
+                    </select>
+                    <span asp-validation-for="RoleName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-il-primary px-4">إنشاء الحساب</button>
+                <a href="/SuperAdmin/Users/CompanyUsers?tenantId=@Model.TenantId" class="btn btn-il-outline px-4">إلغاء</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

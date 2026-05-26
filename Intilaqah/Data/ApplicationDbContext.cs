@@ -1,4 +1,4 @@
-﻿using Intilaqah.Models;
+using Intilaqah.Models;
 using Intilaqah.Models.Base;
 using Intilaqah.Services;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -20,6 +20,8 @@ namespace Intilaqah.Data
         public DbSet<Tenant> Tenants => Set<Tenant>();
         public DbSet<Employee> Employees => Set<Employee>();
         public DbSet<Document> Documents => Set<Document>();
+        public DbSet<Department> Departments => Set<Department>();
+        public DbSet<Contract>   Contracts   => Set<Contract>();
         public DbSet<Permission> Permissions => Set<Permission>();
         public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
 
@@ -42,6 +44,12 @@ namespace Intilaqah.Data
 
                 builder.Entity<Document>()
                     .HasQueryFilter(d => d.TenantId == tenantId.Value && !d.IsDeleted);
+
+                builder.Entity<Department>()
+                    .HasQueryFilter(d => d.TenantId == tenantId.Value && !d.IsDeleted);
+
+                builder.Entity<Contract>()
+                    .HasQueryFilter(c => c.TenantId == tenantId.Value && !c.IsDeleted);
             }
 
             builder.Entity<Tenant>()

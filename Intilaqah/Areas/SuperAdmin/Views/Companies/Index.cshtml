@@ -117,6 +117,9 @@
                                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-light text-info" data-bs-toggle="tooltip" title="التفاصيل">
                                         <i class="ti ti-eye fs-5"></i>
                                     </a>
+                                    <a href="/SuperAdmin/Users/CompanyUsers?tenantId=@item.Id" class="btn btn-sm btn-light text-secondary" data-bs-toggle="tooltip" title="المستخدمون">
+                                        <i class="ti ti-users fs-5"></i>
+                                    </a>
                                     @if (item.Status == TenantStatus.Active)
                                     {
                                         <form asp-action="Freeze" asp-route-id="@item.Id" method="post" class="m-0">

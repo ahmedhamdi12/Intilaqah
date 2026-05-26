@@ -1,0 +1,180 @@
+@model IEnumerable<Intilaqah.Models.ViewModels.SuperAdmin.CompanyUserListItemVM>
+
+@{
+    ViewData["Title"] = $"مستخدمو {ViewBag.Tenant.Name}";
+    var currentCount = (int)ViewBag.CurrentCount;
+    var maxUsers = (int)ViewBag.MaxUsers;
+    var percentage = maxUsers > 0 ? (currentCount * 100.0 / maxUsers) : 0;
+    var progressColor = percentage >= 100 ? "bg-danger" : (percentage >= 80 ? "bg-warning" : "bg-success");
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/SuperAdmin/Companies">الشركات</a></li>
+        <li class="breadcrumb-item">@ViewBag.Tenant.Name</li>
+        <li class="breadcrumb-item active" aria-current="page">المستخدمون</li>
+    </ol>
+</nav>
+
+<div class="il-page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-1 fw-bold">مستخدمو @ViewBag.Tenant.Name</h3>
+        <p class="text-muted mb-0">@currentCount من أصل @maxUsers مستخدم</p>
+    </div>
+    
+    @if (ViewBag.CanAddMore)
+    {
+        <a asp-action="Invite" asp-route-tenantId="@ViewBag.Tenant.Id" class="btn btn-il-primary">
+            <i class="ti ti-user-plus me-1"></i> إضافة مستخدم
+        </a>
+    }
+    else
+    {
+        <button class="btn btn-secondary" disabled data-bs-toggle="tooltip" title="وصلت الشركة للحد الأقصى للمستخدمين">
+            <i class="ti ti-user-plus me-1"></i> إضافة مستخدم
+        </button>
+    }
+</div>
+
+<div class="card mb-4 border-0 shadow-sm il-card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted small">تم استخدام @currentCount من @maxUsers مستخدم</span>
+            <span class="fw-bold small">@percentage.ToString("0")%</span>
+        </div>
+        <div class="progress" style="height: 10px;">
+            <div class="progress-bar @progressColor" role="progressbar" style="width: @percentage%;" aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4 border-0 shadow-sm il-card">
+    <div class="card-body py-3 px-4 d-flex gap-3 align-items-center bg-light rounded-top">
+        <div class="flex-grow-1">
+            <input type="text" id="tableSearch" class="form-control il-form-control border-0 shadow-none bg-white" placeholder="بحث بالاسم أو البريد...">
+        </div>
+        <div style="width: 200px;">
+            <select id="statusFilter" class="form-select il-form-control border-0 shadow-none bg-white">
+                <option value="">الكل</option>
+                <option value="true">نشط</option>
+                <option value="false">معطّل</option>
+            </select>
+        </div>
+    </div>
+    
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="ti ti-users text-muted mb-3" style="font-size: 3rem; opacity: 0.5;"></i>
+            <h5 class="text-muted">لا يوجد مستخدمون لهذه الشركة</h5>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table il-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>المستخدم</th>
+                        <th>الدور</th>
+                        <th>الحالة</th>
+                        <th>تاريخ الإنشاء</th>
+                        <th class="text-end">إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr class="user-row" data-status="@item.IsActive.ToString().ToLower()">
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center rounded-circle" style="width: 40px; height: 40px; font-weight: bold;">
+                                        @(string.IsNullOrEmpty(item.FullName) ? "??" : (item.FullName.Length >= 2 ? item.FullName.Substring(0, 2) : item.FullName))
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">@item.FullName</div>
+                                        <div class="small text-muted">@item.Email</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                @if (item.RoleName == "CompanyAdmin")
+                                {
+                                    <span class="il-badge info">مدير المنشأة</span>
+                                }
+                                else if (item.RoleName == "Employee")
+                                {
+                                    <span class="il-badge active">موظف</span>
+                                }
+                                else
+                                {
+                                    <span class="il-badge inactive">@item.RoleName</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="il-badge active">نشط</span>
+                                }
+                                else
+                                {
+                                    <span class="il-badge danger">معطّل</span>
+                                }
+                            </td>
+                            <td>
+                                @item.CreatedAt.ToString("dd/MM/yyyy")
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <a asp-action="ResetPassword" asp-route-userId="@item.Id" class="btn btn-sm btn-light text-primary" data-bs-toggle="tooltip" title="تغيير كلمة المرور">
+                                        <i class="ti ti-key fs-5"></i>
+                                    </a>
+                                    
+                                    <form asp-action="ToggleActive" asp-route-userId="@item.Id" method="post" class="m-0">
+                                        @Html.AntiForgeryToken()
+                                        @if (item.IsActive)
+                                        {
+                                            <button type="submit" class="btn btn-sm btn-light text-danger" data-bs-toggle="tooltip" title="تعطيل" data-confirm="هل أنت متأكد من تعطيل هذا المستخدم؟">
+                                                <i class="ti ti-user-off fs-5"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="submit" class="btn btn-sm btn-light text-success" data-bs-toggle="tooltip" title="تفعيل">
+                                                <i class="ti ti-user-check fs-5"></i>
+                                            </button>
+                                        }
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('statusFilter')?.addEventListener('change', function() {
+            const val = this.value;
+            document.querySelectorAll('.user-row').forEach(row => {
+                row.style.display = (!val || row.dataset.status === val) ? '' : 'none';
+            });
+        });
+
+        document.getElementById('tableSearch')?.addEventListener('input', function() {
+            const val = this.value.toLowerCase();
+            document.querySelectorAll('.user-row').forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(val) ? '' : 'none';
+            });
+        });
+
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+}

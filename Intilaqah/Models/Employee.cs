@@ -1,4 +1,4 @@
-﻿using System.Reflection.Metadata;
+using System.Reflection.Metadata;
 using Intilaqah.Models.Base;
 
 namespace Intilaqah.Models
@@ -17,8 +17,12 @@ namespace Intilaqah.Models
         public EmploymentType EmploymentType { get; set; }
         public decimal BasicSalary { get; set; }
         public bool IsActive { get; set; } = true;
+        public Guid?  DepartmentId { get; set; }
+        public string EmployeeCode { get; set; } = "";  // e.g. "EMP-001"
 
         public Tenant Tenant { get; set; } = null!;
         public ICollection<Document> Documents { get; set; } = [];
+        public Department?           Department { get; set; }
+        public ICollection<Contract> Contracts  { get; set; } = [];
     }
 }
