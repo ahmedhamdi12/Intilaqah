@@ -72,12 +72,12 @@
             
             <div class="mb-3">
                 <small class="text-muted d-block">تاريخ انتهاء العقد</small>
-                <strong>@Model.ContractEndDate.ToString("yyyy-MM-dd")</strong>
+                <strong>@(Model.ContractEndDate.HasValue ? Model.ContractEndDate.Value.ToString("yyyy-MM-dd") : "-")</strong>
             </div>
             
             @{
-                var daysUntilExpiry = (Model.ContractEndDate.Date - DateTime.UtcNow.Date).Days;
-                var isExpiringSoon = daysUntilExpiry <= 30;
+                var daysUntilExpiry = Model.ContractEndDate.HasValue ? (Model.ContractEndDate.Value.Date - DateTime.UtcNow.Date).Days : 0;
+                var isExpiringSoon = daysUntilExpiry <= 30 && Model.ContractEndDate.HasValue;
                 var progressValue = Math.Max(0, Math.Min(100, (daysUntilExpiry / 365.0) * 100));
                 var progressClass = isExpiringSoon ? "bg-danger" : "bg-success";
             }

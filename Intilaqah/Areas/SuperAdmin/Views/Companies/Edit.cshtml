@@ -44,7 +44,7 @@
             
             <div class="col-md-6">
                 <label asp-for="ContractEndDate" class="il-form-label">تاريخ انتهاء العقد <span class="text-danger">*</span></label>
-                <input asp-for="ContractEndDate" type="date" class="form-control il-form-control" />
+                <input asp-for="ContractEndDate" type="text" class="form-control il-form-control date-picker" placeholder="اختر التاريخ..." />
                 <span asp-validation-for="ContractEndDate" class="text-danger small"></span>
             </div>
             
@@ -79,4 +79,13 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
+    <script>
+        flatpickr(".date-picker", {
+            locale: "ar",
+            dateFormat: "Y-m-d"
+        });
+    </script>
 }

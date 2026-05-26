@@ -72,7 +72,7 @@ namespace Intilaqah.Areas.SuperAdmin.Controllers
                         CommercialRegNo = model.CommercialRegNo,
                         Phone = model.Phone,
                         PlanId = model.PlanId,
-                        ContractEndDate = model.ContractEndDate,
+                        ContractEndDate = model.ContractEndDate.Value,
                         NitaqatColor = model.NitaqatColor
                     };
 
@@ -130,7 +130,7 @@ namespace Intilaqah.Areas.SuperAdmin.Controllers
                     tenant.CommercialRegNo = model.CommercialRegNo;
                     tenant.Phone = model.Phone;
                     tenant.PlanId = model.PlanId;
-                    tenant.ContractEndDate = model.ContractEndDate;
+                    tenant.ContractEndDate = model.ContractEndDate.Value;
                     tenant.NitaqatColor = model.NitaqatColor;
                     tenant.Status = model.Status;
                     

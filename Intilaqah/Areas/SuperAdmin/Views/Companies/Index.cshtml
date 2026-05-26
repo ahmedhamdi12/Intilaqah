@@ -110,48 +110,40 @@
                                 <span class="@statusClass">@statusText</span>
                             </td>
                             <td class="text-end">
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-light border-0 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="ti ti-dots-vertical"></i>
-                                    </button>
-                                    <ul class="dropdown-menu shadow-sm border-0">
-                                        <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id"><i class="ti ti-edit me-2"></i> تعديل</a></li>
-                                        <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Id"><i class="ti ti-eye me-2"></i> التفاصيل</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        @if (item.Status == TenantStatus.Active)
-                                        {
-                                            <li>
-                                                <form asp-action="Freeze" asp-route-id="@item.Id" method="post" class="d-inline">
-                                                    @Html.AntiForgeryToken()
-                                                    <button type="submit" class="dropdown-item text-warning" data-confirm="هل أنت متأكد من تجميد هذه الشركة؟">
-                                                        <i class="ti ti-snowflake me-2"></i> تجميد
-                                                    </button>
-                                                </form>
-                                            </li>
-                                        }
-                                        @if (item.Status == TenantStatus.Frozen)
-                                        {
-                                            <li>
-                                                <form asp-action="Unfreeze" asp-route-id="@item.Id" method="post" class="d-inline">
-                                                    @Html.AntiForgeryToken()
-                                                    <button type="submit" class="dropdown-item text-success">
-                                                        <i class="ti ti-player-play me-2"></i> تفعيل
-                                                    </button>
-                                                </form>
-                                            </li>
-                                        }
-                                        @if (item.Status != TenantStatus.Suspended)
-                                        {
-                                            <li>
-                                                <form asp-action="Suspend" asp-route-id="@item.Id" method="post" class="d-inline">
-                                                    @Html.AntiForgeryToken()
-                                                    <button type="submit" class="dropdown-item text-danger" data-confirm="هل أنت متأكد من إيقاف هذه الشركة؟">
-                                                        <i class="ti ti-ban me-2"></i> إيقاف
-                                                    </button>
-                                                </form>
-                                            </li>
-                                        }
-                                    </ul>
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-light text-primary" data-bs-toggle="tooltip" title="تعديل">
+                                        <i class="ti ti-edit fs-5"></i>
+                                    </a>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-light text-info" data-bs-toggle="tooltip" title="التفاصيل">
+                                        <i class="ti ti-eye fs-5"></i>
+                                    </a>
+                                    @if (item.Status == TenantStatus.Active)
+                                    {
+                                        <form asp-action="Freeze" asp-route-id="@item.Id" method="post" class="m-0">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-light text-warning" data-bs-toggle="tooltip" title="تجميد" data-confirm="هل أنت متأكد من تجميد هذه الشركة؟">
+                                                <i class="ti ti-snowflake fs-5"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    @if (item.Status == TenantStatus.Frozen)
+                                    {
+                                        <form asp-action="Unfreeze" asp-route-id="@item.Id" method="post" class="m-0">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-light text-success" data-bs-toggle="tooltip" title="تفعيل">
+                                                <i class="ti ti-player-play fs-5"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    @if (item.Status != TenantStatus.Suspended)
+                                    {
+                                        <form asp-action="Suspend" asp-route-id="@item.Id" method="post" class="m-0">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-light text-danger" data-bs-toggle="tooltip" title="إيقاف" data-confirm="هل أنت متأكد من إيقاف هذه الشركة؟">
+                                                <i class="ti ti-ban fs-5"></i>
+                                            </button>
+                                        </form>
+                                    }
                                 </div>
                             </td>
                         </tr>
@@ -178,5 +170,11 @@
                 row.style.display = text.includes(val) ? '' : 'none';
             });
         });
+
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
     </script>
 }
