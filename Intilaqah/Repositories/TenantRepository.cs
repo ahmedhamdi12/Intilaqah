@@ -1,4 +1,4 @@
-﻿using Intilaqah.Data;
+using Intilaqah.Data;
 using Intilaqah.Models;
 using Intilaqah.Repositories.Interfaces;
 using Intilaqah.Services;
@@ -29,5 +29,14 @@ namespace Intilaqah.Repositories
 
         public async Task<int> CountFrozenAsync()
             => await _dbSet.CountAsync(t => t.Status == TenantStatus.Frozen);
+
+        public async Task<Dictionary<Guid, int>> GetEmployeeCountsPerTenantAsync()
+            => await _context.Tenants
+                .Where(t => !t.IsDeleted)
+                .Select(t => new {
+                    t.Id,
+                    Count = t.Employees.Count(e => !e.IsDeleted && e.IsActive)
+                })
+                .ToDictionaryAsync(x => x.Id, x => x.Count);
     }
 }

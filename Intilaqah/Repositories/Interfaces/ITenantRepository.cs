@@ -1,4 +1,4 @@
-﻿using Intilaqah.Models;
+using Intilaqah.Models;
 
 namespace Intilaqah.Repositories.Interfaces
 {
@@ -8,5 +8,6 @@ namespace Intilaqah.Repositories.Interfaces
         Task<IEnumerable<Tenant>> GetExpiringContractsAsync(int daysAhead);
         Task<int> CountActiveAsync();
         Task<int> CountFrozenAsync();
+        Task<Dictionary<Guid, int>> GetEmployeeCountsPerTenantAsync();
     }
 }

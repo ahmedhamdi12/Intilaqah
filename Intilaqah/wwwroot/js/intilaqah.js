@@ -17,10 +17,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // 2. Active nav link
-    const currentPath = window.location.pathname;
+    const currentPath = window.location.pathname.toLowerCase();
     const navLinks = document.querySelectorAll('.il-sidebar .nav-link');
     navLinks.forEach(link => {
-        if (link.getAttribute('href') === currentPath) {
+        const href = link.getAttribute('href').toLowerCase();
+        if (currentPath === href || (href !== '/' && currentPath.startsWith(href))) {
             link.classList.add('active');
         }
     });

@@ -1,140 +1,265 @@
+@model Intilaqah.Models.ViewModels.SuperAdmin.SuperAdminDashboardVM
 @using Intilaqah.Models
 @{
     ViewData["Title"] = "لوحة تحكم المدير الأعلى";
-    var expiringTenants = ViewBag.ExpiringTenants as IEnumerable<Tenant>;
-    var latestTenants = ViewBag.LatestTenants as IEnumerable<Tenant>;
+    var today = DateTime.UtcNow.Date;
+    var total = Math.Max(Model.TotalCompanies, 1);
 }
 
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">لوحة تحكم المدير الأعلى</h1>
+        <div class="page-subtitle">
+            @DateTime.Now.ToString("dddd، d MMMM yyyy",
+                new System.Globalization.CultureInfo("ar-SA"))
+            — مرحباً @(ViewBag.UserFullName ?? "")
+        </div>
+    </div>
+    <div class="page-actions">
+        <a href="/SuperAdmin/Companies/Create" class="btn-il btn-il-primary">
+            <i class="ti ti-building-plus"></i> إضافة شركة
+        </a>
+    </div>
+</div>
+
+@* ── KPIs ── *@
 <div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="il-kpi">
-            <h6 class="text-muted">الشركات النشطة</h6>
-            <div class="d-flex justify-content-between align-items-center">
-                <h3 class="mb-0 text-success">@ViewBag.ActiveTenantsCount</h3>
-                <i class="ti ti-building text-success" style="font-size: 2rem;"></i>
+    <div class="col-6 col-lg-3">
+        <a href="/SuperAdmin/Companies" class="text-decoration-none">
+            <div class="il-kpi">
+                <div class="kpi-top">
+                    <div class="kpi-icon blue"><i class="ti ti-building"></i></div>
+                    <span class="kpi-trend up">نشطة: @Model.ActiveCompanies</span>
+                </div>
+                <div class="kpi-value">@Model.TotalCompanies</div>
+                <div class="kpi-label">إجمالي الشركات</div>
+                <div class="kpi-sub">مجمدة: @Model.FrozenCompanies | موقوفة: @Model.SuspendedCompanies</div>
             </div>
+        </a>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="il-kpi">
+            <div class="kpi-top">
+                <div class="kpi-icon green"><i class="ti ti-users"></i></div>
+            </div>
+            <div class="kpi-value">@Model.TotalEmployees</div>
+            <div class="kpi-label">إجمالي الموظفين</div>
+            <div class="kpi-sub">عبر جميع الشركات</div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-lg-3">
         <div class="il-kpi">
-            <h6 class="text-muted">الشركات المجمدة</h6>
-            <div class="d-flex justify-content-between align-items-center">
-                <h3 class="mb-0 text-danger">@ViewBag.FrozenTenantsCount</h3>
-                <i class="ti ti-snowflake text-danger" style="font-size: 2rem;"></i>
+            <div class="kpi-top">
+                <div class="kpi-icon @(Model.ExpiringContracts30 > 0 ? "red" : "green")">
+                    <i class="ti ti-file-alert"></i>
+                </div>
+                @if (Model.ExpiringContracts7 > 0)
+                {
+                    <span class="kpi-trend down">@Model.ExpiringContracts7 عاجلة</span>
+                }
             </div>
+            <div class="kpi-value @(Model.ExpiringContracts30 > 0 ? "text-danger-il" : "")">
+                @Model.ExpiringContracts30
+            </div>
+            <div class="kpi-label">عقود تنتهي خلال 30 يوم</div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="il-kpi">
-            <h6 class="text-muted">عقود تنتهي قريباً</h6>
-            <div class="d-flex justify-content-between align-items-center">
-                <h3 class="mb-0 text-warning">@ViewBag.ExpiringContractsCount</h3>
-                <i class="ti ti-alert-triangle text-warning" style="font-size: 2rem;"></i>
+    <div class="col-6 col-lg-3">
+        <a href="/SuperAdmin/Plans" class="text-decoration-none">
+            <div class="il-kpi">
+                <div class="kpi-top">
+                    <div class="kpi-icon purple"><i class="ti ti-package"></i></div>
+                </div>
+                <div class="kpi-value">@Model.TotalPlans</div>
+                <div class="kpi-label">الباقات المتاحة</div>
             </div>
+        </a>
+    </div>
+</div>
+
+@* ── Row 2: Nitaqat + Expiring ── *@
+<div class="row g-3 mb-4">
+
+    <div class="col-lg-5">
+        <div class="il-card h-100">
+            <div class="il-card-header">
+                <h2 class="card-title"><i class="ti ti-chart-pie"></i> توزيع النطاقات</h2>
+            </div>
+            @if (Model.TotalCompanies == 0)
+            {
+                <div class="text-center py-4" style="color:var(--il-muted)">
+                    <i class="ti ti-building-off" style="font-size:36px;opacity:.3"></i>
+                    <div class="mt-2" style="font-size:13px">لا توجد شركات مسجلة بعد</div>
+                </div>
+            }
+            else
+            {
+                <div style="display:flex;flex-direction:column;gap:14px">
+                    @{
+                        var zones = new[] {
+                            ("بلاتيني", Model.NitaqatPlatinum, "#64748b"),
+                            ("أخضر",   Model.NitaqatGreen,    "#0d9e6e"),
+                            ("أصفر",   Model.NitaqatYellow,   "#d97706"),
+                            ("أحمر",   Model.NitaqatRed,      "#dc2626"),
+                        };
+                    }
+                    @foreach (var (label, count, color) in zones)
+                    {
+                        var pct = (double)count / total * 100;
+                        <div>
+                            <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px">
+                                <span style="font-weight:600">@label</span>
+                                <span style="color:var(--il-muted)">@count شركة</span>
+                            </div>
+                            <div class="il-progress">
+                                <div class="il-progress-fill"
+                                     style="width:@pct.ToString("F0")%;background:@color"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="il-kpi">
-            <h6 class="text-muted">عدد الباقات</h6>
-            <div class="d-flex justify-content-between align-items-center">
-                <h3 class="mb-0 text-primary">@ViewBag.PlansCount</h3>
-                <i class="ti ti-packages text-primary" style="font-size: 2rem;"></i>
+
+    <div class="col-lg-7">
+        <div class="il-card h-100">
+            <div class="il-card-header">
+                <h2 class="card-title"><i class="ti ti-clock-alert"></i> العقود المنتهية قريباً</h2>
+                <a href="/SuperAdmin/Companies" class="card-action">كل الشركات</a>
             </div>
+            @if (!Model.ExpiringContracts.Any())
+            {
+                <div class="text-center py-4" style="color:var(--il-success)">
+                    <i class="ti ti-circle-check" style="font-size:36px;opacity:.6"></i>
+                    <div class="mt-2" style="font-size:13px">لا توجد عقود تنتهي خلال 30 يوم ✓</div>
+                </div>
+            }
+            else
+            {
+                <div class="table-wrap">
+                    <table class="il-table">
+                        <thead>
+                            <tr>
+                                <th>الشركة</th>
+                                <th>الباقة</th>
+                                <th>تاريخ الانتهاء</th>
+                                <th>المتبقي</th>
+                                <th>إجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ExpiringContracts)
+                            {
+                                <tr>
+                                    <td><strong>@item.CompanyName</strong></td>
+                                    <td><span class="il-badge info">@item.PlanName</span></td>
+                                    <td>@item.ContractEndDate.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        <span class="il-badge @item.UrgencyClass">
+                                            @item.DaysRemaining يوم
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="/SuperAdmin/Companies/Edit/@item.Id"
+                                           class="btn-il btn-il-outline btn-il-sm">تجديد</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
         </div>
     </div>
 </div>
 
-<div class="row g-4">
-    <div class="col-md-6">
-        <div class="il-card p-4 h-100">
-            <div class="il-card-header mb-3">
-                <h5 class="mb-0 fw-bold">الشركات المضافة حديثاً</h5>
-                <a href="/SuperAdmin/Companies" class="btn btn-sm btn-il-outline">عرض الكل</a>
+@* ── Row 3: Recent Companies + Plans ── *@
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="il-card">
+            <div class="il-card-header">
+                <h2 class="card-title"><i class="ti ti-building"></i> آخر الشركات المضافة</h2>
+                <a href="/SuperAdmin/Companies" class="card-action">عرض الكل</a>
             </div>
-            
-            @if (latestTenants != null && latestTenants.Any())
+            @if (!Model.RecentCompanies.Any())
             {
-                <div class="table-responsive">
-                    <table class="table il-table align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th>اسم الشركة</th>
-                                <th>تاريخ الإنشاء</th>
-                                <th>الحالة</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var tenant in latestTenants)
-                            {
-                                <tr>
-                                    <td class="fw-bold">@tenant.Name</td>
-                                    <td>@tenant.CreatedAt.ToString("yyyy-MM-dd")</td>
-                                    <td>
-                                        @{
-                                            var (statusText, statusClass) = tenant.Status switch {
-                                                TenantStatus.Active    => ("نشطة", "il-badge active"),
-                                                TenantStatus.Frozen    => ("مجمدة", "il-badge warning"),
-                                                TenantStatus.Suspended => ("موقوفة", "il-badge danger"),
-                                                _                      => ("غير محدد", "il-badge inactive")
-                                            };
-                                        }
-                                        <span class="@statusClass">@statusText</span>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                <div class="text-center py-4" style="color:var(--il-muted);font-size:13px">
+                    لا توجد شركات مسجلة بعد
                 </div>
             }
             else
             {
-                <div class="text-center py-4 text-muted">لا توجد شركات مضافة حديثاً</div>
+                <table class="il-table">
+                    <thead>
+                        <tr>
+                            <th>الشركة</th>
+                            <th>الباقة</th>
+                            <th>الموظفون</th>
+                            <th>النطاق</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model.RecentCompanies)
+                        {
+                            var (nLabel, nClass) = c.NitaqatColor switch {
+                                NitaqatColor.Platinum => ("بلاتيني", "info"),
+                                NitaqatColor.Green    => ("أخضر",    "active"),
+                                NitaqatColor.Yellow   => ("أصفر",    "warning"),
+                                NitaqatColor.Red      => ("أحمر",    "danger"),
+                                _                     => ("—",        "inactive")
+                            };
+                            var (sLabel, sClass) = c.Status switch {
+                                TenantStatus.Active    => ("نشطة",   "active"),
+                                TenantStatus.Frozen    => ("مجمدة",  "warning"),
+                                TenantStatus.Suspended => ("موقوفة", "danger"),
+                                _                      => ("—",       "inactive")
+                            };
+                            <tr>
+                                <td><strong>@c.Name</strong></td>
+                                <td>@c.PlanName</td>
+                                <td>@c.EmployeeCount</td>
+                                <td><span class="il-badge @nClass">@nLabel</span></td>
+                                <td><span class="il-badge @sClass">@sLabel</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             }
         </div>
     </div>
-    
-    <div class="col-md-6">
-        <div class="il-card p-4 h-100">
-            <div class="il-card-header mb-3">
-                <h5 class="mb-0 fw-bold">عقود تنتهي قريباً</h5>
-                <a href="/SuperAdmin/Companies" class="btn btn-sm btn-il-outline">عرض الكل</a>
+
+    <div class="col-lg-4">
+        <div class="il-card h-100">
+            <div class="il-card-header">
+                <h2 class="card-title"><i class="ti ti-package"></i> استخدام الباقات</h2>
+                <a href="/SuperAdmin/Plans" class="card-action">إدارة</a>
             </div>
-            
-            @if (expiringTenants != null && expiringTenants.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table il-table align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th>اسم الشركة</th>
-                                <th>تاريخ الانتهاء</th>
-                                <th>الأيام المتبقية</th>
-                                <th>الإجراء</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var tenant in expiringTenants)
-                            {
-                                var daysRemaining = (tenant.ContractEndDate.Date - DateTime.UtcNow.Date).Days;
-                                var daysClass = daysRemaining <= 7 ? "text-danger fw-bold" : (daysRemaining <= 30 ? "text-warning fw-bold" : "");
-                                
-                                <tr>
-                                    <td class="fw-bold">@tenant.Name</td>
-                                    <td>@tenant.ContractEndDate.ToString("yyyy-MM-dd")</td>
-                                    <td class="@daysClass">@daysRemaining يوم</td>
-                                    <td>
-                                        <a asp-controller="Companies" asp-action="Edit" asp-route-id="@tenant.Id" class="btn btn-sm btn-il-outline">تجديد</a>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
-            {
-                <div class="text-center py-4 text-muted">لا توجد عقود تنتهي قريباً</div>
-            }
+            <div style="display:flex;flex-direction:column;gap:12px">
+                @foreach (var p in Model.PlanUtilizations)
+                {
+                    var pct = Model.TotalCompanies > 0
+                        ? (double)p.TenantsCount / Model.TotalCompanies * 100
+                        : 0;
+                    <div>
+                        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+                            <span style="font-weight:600">@p.Name</span>
+                            <span class="il-badge @(p.IsActive ? "active" : "inactive")">
+                                @p.TenantsCount شركة
+                            </span>
+                        </div>
+                        <div class="il-progress">
+                            <div class="il-progress-fill"
+                                 style="width:@pct.ToString("F0")%;background:var(--il-primary-light)">
+                            </div>
+                        </div>
+                        <div style="font-size:11px;color:var(--il-muted);margin-top:3px">
+                            حتى @p.MaxEmployees موظف
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
     </div>
 </div>
