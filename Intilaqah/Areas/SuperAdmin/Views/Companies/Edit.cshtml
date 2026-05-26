@@ -1,0 +1,82 @@
+@model TenantEditVM
+@{
+    ViewData["Title"] = "تعديل بيانات الشركة: " + Model.Name;
+}
+
+<div class="il-page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-1 fw-bold">تعديل بيانات الشركة: @Model.Name</h3>
+    </div>
+    <a asp-action="Index" class="btn btn-il-outline">
+        <i class="ti ti-arrow-right me-1"></i> رجوع
+    </a>
+</div>
+
+<div class="il-card p-4">
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="Id" />
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label asp-for="Name" class="il-form-label">اسم الشركة <span class="text-danger">*</span></label>
+                <input asp-for="Name" class="form-control il-form-control" />
+                <span asp-validation-for="Name" class="text-danger small"></span>
+            </div>
+            
+            <div class="col-md-6">
+                <label asp-for="CommercialRegNo" class="il-form-label">رقم السجل التجاري <span class="text-danger">*</span></label>
+                <input asp-for="CommercialRegNo" class="form-control il-form-control" />
+                <span asp-validation-for="CommercialRegNo" class="text-danger small"></span>
+            </div>
+            
+            <div class="col-md-6">
+                <label asp-for="Phone" class="il-form-label">رقم الهاتف</label>
+                <input asp-for="Phone" type="tel" class="form-control il-form-control" />
+                <span asp-validation-for="Phone" class="text-danger small"></span>
+            </div>
+            
+            <div class="col-md-6">
+                <label asp-for="PlanId" class="il-form-label">الباقة <span class="text-danger">*</span></label>
+                <select asp-for="PlanId" asp-items="Model.AvailablePlans" class="form-select il-form-control">
+                    <option value="">-- اختر الباقة --</option>
+                </select>
+                <span asp-validation-for="PlanId" class="text-danger small"></span>
+            </div>
+            
+            <div class="col-md-6">
+                <label asp-for="ContractEndDate" class="il-form-label">تاريخ انتهاء العقد <span class="text-danger">*</span></label>
+                <input asp-for="ContractEndDate" type="date" class="form-control il-form-control" />
+                <span asp-validation-for="ContractEndDate" class="text-danger small"></span>
+            </div>
+            
+            <div class="col-md-6">
+                <label asp-for="NitaqatColor" class="il-form-label">لون النطاق</label>
+                <select asp-for="NitaqatColor" class="form-select il-form-control">
+                    <option value="Platinum">بلاتيني</option>
+                    <option value="Green">أخضر</option>
+                    <option value="Yellow">أصفر</option>
+                    <option value="Red">أحمر</option>
+                </select>
+                <span asp-validation-for="NitaqatColor" class="text-danger small"></span>
+            </div>
+            
+            <div class="col-md-6">
+                <label asp-for="Status" class="il-form-label">حالة الشركة</label>
+                <select asp-for="Status" class="form-select il-form-control">
+                    <option value="Active">نشطة</option>
+                    <option value="Frozen">مجمدة</option>
+                    <option value="Suspended">موقوفة</option>
+                </select>
+                <span asp-validation-for="Status" class="text-danger small"></span>
+            </div>
+            
+            <div class="col-12 mt-4 pt-3 border-top">
+                <button type="submit" class="btn btn-il-primary px-4">حفظ التعديلات</button>
+                <a asp-action="Index" class="btn btn-il-outline ms-2">إلغاء</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,78 @@
+@model PlanCreateVM
+@{
+    ViewData["Title"] = "تعديل الباقة: " + Model.Name;
+}
+
+<div class="il-page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-1 fw-bold">تعديل الباقة: @Model.Name</h3>
+    </div>
+    <a asp-action="Index" class="btn btn-il-outline">
+        <i class="ti ti-arrow-right me-1"></i> رجوع
+    </a>
+</div>
+
+<div class="il-card p-4">
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="Id" />
+        <div class="row g-4">
+            <div class="col-md-12">
+                <label asp-for="Name" class="il-form-label">اسم الباقة <span class="text-danger">*</span></label>
+                <input asp-for="Name" class="form-control il-form-control" />
+                <span asp-validation-for="Name" class="text-danger small"></span>
+            </div>
+            
+            <div class="col-md-6">
+                <label asp-for="MaxUsers" class="il-form-label">الحد الأقصى للمستخدمين <span class="text-danger">*</span></label>
+                <input asp-for="MaxUsers" class="form-control il-form-control" type="number" min="1" />
+                <span asp-validation-for="MaxUsers" class="text-danger small"></span>
+            </div>
+            
+            <div class="col-md-6">
+                <label asp-for="MaxEmployees" class="il-form-label">الحد الأقصى للموظفين <span class="text-danger">*</span></label>
+                <input asp-for="MaxEmployees" class="form-control il-form-control" type="number" min="1" />
+                <span asp-validation-for="MaxEmployees" class="text-danger small"></span>
+            </div>
+            
+            <div class="col-12">
+                <h6 class="fw-bold mb-3 mt-2 border-top pt-4">المميزات</h6>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="form-check form-switch fs-5">
+                            <input class="form-check-input" type="checkbox" asp-for="FeaturePayroll">
+                            <label class="form-check-label fs-6 ms-2" asp-for="FeaturePayroll">مسير الرواتب (WPS)</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check form-switch fs-5">
+                            <input class="form-check-input" type="checkbox" asp-for="FeatureNitaqat">
+                            <label class="form-check-label fs-6 ms-2" asp-for="FeatureNitaqat">نطاقات والسعودة</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check form-switch fs-5">
+                            <input class="form-check-input" type="checkbox" asp-for="FeatureAlerts">
+                            <label class="form-check-label fs-6 ms-2" asp-for="FeatureAlerts">تنبيهات الوثائق</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-12 mt-4">
+                <div class="form-check form-switch fs-5 border rounded p-3 bg-light d-flex align-items-center">
+                    <input class="form-check-input ms-3 mt-0" type="checkbox" asp-for="IsActive">
+                    <label class="form-check-label fw-bold m-0" asp-for="IsActive">حالة الباقة (نشطة)</label>
+                </div>
+            </div>
+            
+            <div class="col-12 mt-4 pt-3 border-top">
+                <button type="submit" class="btn btn-il-primary px-4">حفظ التعديلات</button>
+                <a asp-action="Index" class="btn btn-il-outline ms-2">إلغاء</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

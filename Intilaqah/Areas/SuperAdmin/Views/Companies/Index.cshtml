@@ -1,0 +1,182 @@
+@model IEnumerable<TenantListItemVM>
+@{
+    ViewData["Title"] = "الشركات العميلة";
+}
+
+<div class="il-page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-1 fw-bold">الشركات العميلة</h3>
+        <p class="text-muted mb-0">إجمالي @Model.Count() شركة | @ViewBag.ExpiringCount تنتهي عقودها قريباً</p>
+    </div>
+    <a asp-action="Create" class="btn btn-il-primary">
+        <i class="ti ti-plus me-1"></i> إضافة شركة
+    </a>
+</div>
+
+@if (ViewBag.ExpiringCount > 0)
+{
+    <div class="alert alert-warning d-flex align-items-center" role="alert">
+        <i class="ti ti-alert-triangle fs-4 me-2"></i>
+        <div>
+            <strong>تنبيه:</strong> @ViewBag.ExpiringCount شركة تنتهي عقودها خلال 30 يوم
+        </div>
+    </div>
+}
+
+<div class="card mb-4 border-0 shadow-sm il-card">
+    <div class="card-body py-3 px-4 d-flex gap-3 align-items-center bg-light rounded-top">
+        <div class="flex-grow-1">
+            <input type="text" id="tableSearch" class="form-control il-form-control border-0 shadow-none bg-white" placeholder="بحث بالاسم أو السجل التجاري...">
+        </div>
+        <div style="width: 200px;">
+            <select id="statusFilter" class="form-select il-form-control border-0 shadow-none bg-white">
+                <option value="">الكل</option>
+                <option value="Active">نشطة</option>
+                <option value="Frozen">مجمدة</option>
+                <option value="Suspended">موقوفة</option>
+            </select>
+        </div>
+    </div>
+    
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="ti ti-building text-muted mb-3" style="font-size: 3rem; opacity: 0.5;"></i>
+            <h5 class="text-muted">لا توجد شركات مسجلة بعد</h5>
+            <a asp-action="Create" class="btn btn-il-outline mt-3">إضافة شركة</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table il-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>الشركة</th>
+                        <th>الباقة</th>
+                        <th>الموظفون</th>
+                        <th>نطاقات</th>
+                        <th>انتهاء العقد</th>
+                        <th>الحالة</th>
+                        <th class="text-end">إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr class="company-row" data-status="@item.Status">
+                            <td>
+                                <div class="fw-bold">@item.Name</div>
+                                <div class="small text-muted">@item.CommercialRegNo</div>
+                            </td>
+                            <td><span class="il-badge info">@item.PlanName</span></td>
+                            <td>@item.EmployeeCount</td>
+                            <td>
+                                @{
+                                    var (nitaqatText, nitaqatClass) = item.NitaqatColor switch {
+                                        NitaqatColor.Platinum => ("بلاتيني", "il-badge info"),
+                                        NitaqatColor.Green    => ("أخضر",    "il-badge active"),
+                                        NitaqatColor.Yellow   => ("أصفر",    "il-badge warning"),
+                                        NitaqatColor.Red      => ("أحمر",    "il-badge danger"),
+                                        _                     => ("غير محدد", "il-badge inactive")
+                                    };
+                                }
+                                <span class="@nitaqatClass">@nitaqatText</span>
+                            </td>
+                            <td>
+                                @if (item.IsExpiringSoon)
+                                {
+                                    <span class="text-danger fw-bold">
+                                        <i class="ti ti-alert-circle me-1"></i>
+                                        @item.ContractEndDate.ToString("yyyy-MM-dd")
+                                        <br>
+                                        <small class="text-danger">⚠ @item.DaysUntilExpiry يوم</small>
+                                    </span>
+                                }
+                                else
+                                {
+                                    @item.ContractEndDate.ToString("yyyy-MM-dd")
+                                }
+                            </td>
+                            <td>
+                                @{
+                                    var (statusText, statusClass) = item.Status switch {
+                                        TenantStatus.Active    => ("نشطة", "il-badge active"),
+                                        TenantStatus.Frozen    => ("مجمدة", "il-badge warning"),
+                                        TenantStatus.Suspended => ("موقوفة", "il-badge danger"),
+                                        _                      => ("غير محدد", "il-badge inactive")
+                                    };
+                                }
+                                <span class="@statusClass">@statusText</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-light border-0 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="ti ti-dots-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu shadow-sm border-0">
+                                        <li><a class="dropdown-item" asp-action="Edit" asp-route-id="@item.Id"><i class="ti ti-edit me-2"></i> تعديل</a></li>
+                                        <li><a class="dropdown-item" asp-action="Details" asp-route-id="@item.Id"><i class="ti ti-eye me-2"></i> التفاصيل</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        @if (item.Status == TenantStatus.Active)
+                                        {
+                                            <li>
+                                                <form asp-action="Freeze" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="dropdown-item text-warning" data-confirm="هل أنت متأكد من تجميد هذه الشركة؟">
+                                                        <i class="ti ti-snowflake me-2"></i> تجميد
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        }
+                                        @if (item.Status == TenantStatus.Frozen)
+                                        {
+                                            <li>
+                                                <form asp-action="Unfreeze" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="dropdown-item text-success">
+                                                        <i class="ti ti-player-play me-2"></i> تفعيل
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        }
+                                        @if (item.Status != TenantStatus.Suspended)
+                                        {
+                                            <li>
+                                                <form asp-action="Suspend" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="dropdown-item text-danger" data-confirm="هل أنت متأكد من إيقاف هذه الشركة؟">
+                                                        <i class="ti ti-ban me-2"></i> إيقاف
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('statusFilter')?.addEventListener('change', function() {
+            const val = this.value;
+            document.querySelectorAll('.company-row').forEach(row => {
+                row.style.display = (!val || row.dataset.status === val) ? '' : 'none';
+            });
+        });
+
+        document.getElementById('tableSearch')?.addEventListener('input', function() {
+            const val = this.value.toLowerCase();
+            document.querySelectorAll('.company-row').forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(val) ? '' : 'none';
+            });
+        });
+    </script>
+}

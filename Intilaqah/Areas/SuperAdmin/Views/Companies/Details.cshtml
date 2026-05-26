@@ -1,0 +1,118 @@
+@model TenantEditVM
+@{
+    ViewData["Title"] = "تفاصيل الشركة: " + Model.Name;
+}
+
+<div class="il-page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-1 fw-bold">تفاصيل الشركة: @Model.Name</h3>
+    </div>
+    <a asp-action="Index" class="btn btn-il-outline">
+        <i class="ti ti-arrow-right me-1"></i> رجوع
+    </a>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="il-card p-4 h-100">
+            <h5 class="fw-bold mb-3 border-bottom pb-2">بيانات الشركة</h5>
+            
+            <div class="mb-3">
+                <small class="text-muted d-block">اسم الشركة</small>
+                <strong>@Model.Name</strong>
+            </div>
+            
+            <div class="mb-3">
+                <small class="text-muted d-block">رقم السجل التجاري</small>
+                <strong>@Model.CommercialRegNo</strong>
+            </div>
+            
+            <div class="mb-3">
+                <small class="text-muted d-block">رقم الهاتف</small>
+                <strong>@(string.IsNullOrEmpty(Model.Phone) ? "-" : Model.Phone)</strong>
+            </div>
+            
+            <div class="mb-3">
+                <small class="text-muted d-block mb-1">حالة الشركة</small>
+                @{
+                    var (statusText, statusClass) = Model.Status switch {
+                        TenantStatus.Active    => ("نشطة", "il-badge active"),
+                        TenantStatus.Frozen    => ("مجمدة", "il-badge warning"),
+                        TenantStatus.Suspended => ("موقوفة", "il-badge danger"),
+                        _                      => ("غير محدد", "il-badge inactive")
+                    };
+                }
+                <span class="@statusClass">@statusText</span>
+            </div>
+            
+            <div>
+                <small class="text-muted d-block mb-1">نطاقات</small>
+                @{
+                    var (nitaqatText, nitaqatClass) = Model.NitaqatColor switch {
+                        NitaqatColor.Platinum => ("بلاتيني", "il-badge info"),
+                        NitaqatColor.Green    => ("أخضر",    "il-badge active"),
+                        NitaqatColor.Yellow   => ("أصفر",    "il-badge warning"),
+                        NitaqatColor.Red      => ("أحمر",    "il-badge danger"),
+                        _                     => ("غير محدد", "il-badge inactive")
+                    };
+                }
+                <span class="@nitaqatClass">@nitaqatText</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="il-card p-4 h-100">
+            <h5 class="fw-bold mb-3 border-bottom pb-2">تفاصيل العقد والباقة</h5>
+            
+            <div class="mb-3">
+                <small class="text-muted d-block mb-1">الباقة المشترك بها</small>
+                <span class="il-badge info fs-6">@ViewBag.PlanName</span>
+            </div>
+            
+            <div class="mb-3">
+                <small class="text-muted d-block">تاريخ انتهاء العقد</small>
+                <strong>@Model.ContractEndDate.ToString("yyyy-MM-dd")</strong>
+            </div>
+            
+            @{
+                var daysUntilExpiry = (Model.ContractEndDate.Date - DateTime.UtcNow.Date).Days;
+                var isExpiringSoon = daysUntilExpiry <= 30;
+                var progressValue = Math.Max(0, Math.Min(100, (daysUntilExpiry / 365.0) * 100));
+                var progressClass = isExpiringSoon ? "bg-danger" : "bg-success";
+            }
+            
+            <div>
+                <div class="d-flex justify-content-between mb-1">
+                    <small class="text-muted">الأيام المتبقية</small>
+                    <small class="fw-bold @(isExpiringSoon ? "text-danger" : "text-success")">
+                        @(daysUntilExpiry > 0 ? $"{daysUntilExpiry} يوم" : "منتهي")
+                    </small>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar @progressClass" role="progressbar" style="width: @progressValue%" aria-valuenow="@progressValue" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="il-card p-4 h-100">
+            <h5 class="fw-bold mb-3 border-bottom pb-2">إحصائيات (قريباً)</h5>
+            
+            <div class="il-kpi mb-3">
+                <h6 class="text-muted">عدد الموظفين</h6>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0 text-primary">@ViewBag.EmployeeCount</h3>
+                    <i class="ti ti-users text-primary" style="font-size: 2rem;"></i>
+                </div>
+            </div>
+            
+            <div class="mt-4 pt-3 border-top text-center">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-il-primary w-100">
+                    <i class="ti ti-edit me-1"></i> تعديل بيانات الشركة
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

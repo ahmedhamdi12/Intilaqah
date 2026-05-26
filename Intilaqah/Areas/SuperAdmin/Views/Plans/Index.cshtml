@@ -1,0 +1,92 @@
+@model IEnumerable<PlanListItemVM>
+@{
+    ViewData["Title"] = "إدارة الباقات";
+}
+
+<div class="il-page-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="mb-1 fw-bold">إدارة الباقات</h3>
+    </div>
+    <a asp-action="Create" class="btn btn-il-primary">
+        <i class="ti ti-plus me-1"></i> إضافة باقة
+    </a>
+</div>
+
+<div class="row g-3">
+    @foreach (var plan in Model)
+    {
+        <div class="col-md-4">
+            <div class="il-card h-100 d-flex flex-column">
+                <div class="p-4 flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h4 class="fw-bold mb-0">@plan.Name</h4>
+                        <span class="il-badge @(plan.IsActive ? "active" : "inactive")">
+                            @(plan.IsActive ? "نشطة" : "معطلة")
+                        </span>
+                    </div>
+                    
+                    <div class="d-flex gap-2 mb-4">
+                        <span class="badge bg-light text-dark border"><i class="ti ti-user me-1"></i> حتى @plan.MaxUsers مستخدم</span>
+                        <span class="badge bg-light text-dark border"><i class="ti ti-users me-1"></i> حتى @plan.MaxEmployees موظف</span>
+                    </div>
+                    
+                    <h6 class="fw-bold mb-3">المميزات:</h6>
+                    <ul class="list-unstyled mb-4">
+                        <li class="mb-2 d-flex align-items-center">
+                            @if (plan.Features.ContainsKey("payroll") && plan.Features["payroll"])
+                            {
+                                <i class="ti ti-check text-success me-2"></i> <span>مسير الرواتب (WPS)</span>
+                            }
+                            else
+                            {
+                                <i class="ti ti-x text-danger me-2"></i> <span class="text-muted text-decoration-line-through">مسير الرواتب (WPS)</span>
+                            }
+                        </li>
+                        <li class="mb-2 d-flex align-items-center">
+                            @if (plan.Features.ContainsKey("nitaqat") && plan.Features["nitaqat"])
+                            {
+                                <i class="ti ti-check text-success me-2"></i> <span>نطاقات والسعودة</span>
+                            }
+                            else
+                            {
+                                <i class="ti ti-x text-danger me-2"></i> <span class="text-muted text-decoration-line-through">نطاقات والسعودة</span>
+                            }
+                        </li>
+                        <li class="mb-2 d-flex align-items-center">
+                            @if (plan.Features.ContainsKey("alerts") && plan.Features["alerts"])
+                            {
+                                <i class="ti ti-check text-success me-2"></i> <span>تنبيهات الوثائق</span>
+                            }
+                            else
+                            {
+                                <i class="ti ti-x text-danger me-2"></i> <span class="text-muted text-decoration-line-through">تنبيهات الوثائق</span>
+                            }
+                        </li>
+                    </ul>
+                    
+                    <div class="text-muted small mt-auto">
+                        <i class="ti ti-building me-1"></i> @plan.TenantsCount شركة تستخدم هذه الباقة
+                    </div>
+                </div>
+                
+                <div class="p-3 border-top bg-light d-flex justify-content-between align-items-center rounded-bottom">
+                    <a asp-action="Edit" asp-route-id="@plan.Id" class="btn btn-sm btn-il-outline">
+                        <i class="ti ti-edit me-1"></i> تعديل
+                    </a>
+                    
+                    <form asp-action="ToggleActive" asp-route-id="@plan.Id" method="post" class="m-0">
+                        @Html.AntiForgeryToken()
+                        @if (plan.IsActive)
+                        {
+                            <button type="submit" class="btn btn-sm btn-outline-danger">تعطيل</button>
+                        }
+                        else
+                        {
+                            <button type="submit" class="btn btn-sm btn-outline-success">تفعيل</button>
+                        }
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+</div>
