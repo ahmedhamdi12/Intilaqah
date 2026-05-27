@@ -105,43 +105,28 @@
                                 </span>
                             </td>
                             <td>
-                                <div class="dropdown">
-                                    <button class="btn-il btn-il-outline btn-il-sm"
-                                            type="button" data-bs-toggle="dropdown">
-                                        إجراءات <i class="ti ti-chevron-down"></i>
-                                    </button>
-                                    <ul class="dropdown-menu"
-                                        style="font-family:'Tajawal',sans-serif">
-                                        <li>
-                                            <a class="dropdown-item"
-                                               href="/CompanyAdmin/Employees/Details/@emp.Id">
-                                                <i class="ti ti-eye" style="margin-left:6px"></i>
-                                                الملف الشخصي
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item"
-                                               href="/CompanyAdmin/Employees/Edit/@emp.Id">
-                                                <i class="ti ti-edit" style="margin-left:6px"></i>
-                                                تعديل
-                                            </a>
-                                        </li>
-                                        <li><hr class="dropdown-divider" /></li>
-                                        <li>
-                                            <form asp-action="ToggleActive"
-                                                  asp-route-id="@emp.Id"
-                                                  method="post" class="d-inline">
-                                                @Html.AntiForgeryToken()
-                                                <button type="submit"
-                                                        class="dropdown-item @(emp.IsActive ? "text-danger" : "text-success")"
-                                                        data-confirm="@(emp.IsActive ? $"هل تريد تعطيل {emp.FullNameAr}؟" : $"هل تريد تفعيل {emp.FullNameAr}؟")">
-                                                    <i class="ti ti-@(emp.IsActive ? "user-off" : "user-check")"
-                                                       style="margin-left:6px"></i>
-                                                    @(emp.IsActive ? "تعطيل" : "تفعيل")
-                                                </button>
-                                            </form>
-                                        </li>
-                                    </ul>
+                                <div class="il-actions-group">
+                                    <a href="/CompanyAdmin/Employees/Details/@emp.Id"
+                                       class="il-action-btn"
+                                       data-tooltip="الملف الشخصي">
+                                        <i class="ti ti-eye"></i>
+                                    </a>
+                                    <a href="/CompanyAdmin/Employees/Edit/@emp.Id"
+                                       class="il-action-btn"
+                                       data-tooltip="تعديل">
+                                        <i class="ti ti-edit"></i>
+                                    </a>
+                                    <form asp-action="ToggleActive"
+                                          asp-route-id="@emp.Id"
+                                          method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit"
+                                                class="il-action-btn @(emp.IsActive ? "il-action-danger" : "il-action-success")"
+                                                data-tooltip="@(emp.IsActive ? "تعطيل" : "تفعيل")"
+                                                data-confirm="@(emp.IsActive ? $"هل تريد تعطيل {emp.FullNameAr}؟" : $"هل تريد تفعيل {emp.FullNameAr}؟")">
+                                            <i class="ti ti-@(emp.IsActive ? "user-off" : "user-check")"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
