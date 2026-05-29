@@ -22,7 +22,7 @@ namespace Intilaqah.Areas.SuperAdmin.Controllers
         {
             var tenants = (await _uow.Tenants.GetAllAsync()).ToList();
             var plans = (await _uow.Plans.GetAllAsync()).ToDictionary(p => p.Id, p => p.Name);
-
+            var employeeCounts = await _uow.Tenants.GetEmployeeCountsPerTenantAsync();
             var vm = tenants.Select(t => new TenantListItemVM
             {
                 Id = t.Id,
@@ -30,7 +30,7 @@ namespace Intilaqah.Areas.SuperAdmin.Controllers
                 CommercialRegNo = t.CommercialRegNo,
                 Phone = t.Phone,
                 PlanName = plans.ContainsKey(t.PlanId) ? plans[t.PlanId] : "غير محدد",
-                EmployeeCount = 0, // Placeholder as per instructions
+                EmployeeCount = employeeCounts.GetValueOrDefault(t.Id, 0),
                 Status = t.Status,
                 NitaqatColor = t.NitaqatColor,
                 ContractEndDate = t.ContractEndDate
@@ -204,7 +204,7 @@ namespace Intilaqah.Areas.SuperAdmin.Controllers
             var tenant = await _uow.Tenants.GetByIdWithPlanAsync(id);
             if (tenant == null) return NotFound();
 
-            var employees = await _uow.Employees.FindAsync(e => e.TenantId == id);
+            var employees = await _uow.Employees.FindAsync(e => e.TenantId == id && !e.IsDeleted);
             
             // Reusing TenantEditVM for Details as requested, or create a specific DetailsVM
             var model = new TenantEditVM
