@@ -1,0 +1,86 @@
+@model IEnumerable<Intilaqah.Models.Employee>
+@{
+    ViewData["Title"] = "موظفو القسم";
+    var dept = ViewBag.Department as Intilaqah.Models.Department;
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">موظفو قسم: @dept?.Name</h1>
+        <div class="page-subtitle">@Model.Count() موظف</div>
+    </div>
+    <div class="page-actions">
+        <a href="/CompanyAdmin/Departments" class="btn-il btn-il-outline">
+            <i class="ti ti-arrow-right"></i> الأقسام
+        </a>
+    </div>
+</div>
+
+<div class="il-card">
+    @if (!Model.Any())
+    {
+        <div class="text-center py-4" style="color:var(--il-muted);font-size:13px">
+            لا يوجد موظفون في هذا القسم
+        </div>
+    }
+    else
+    {
+        <table class="il-table">
+            <thead>
+                <tr>
+                    <th>الموظف</th>
+                    <th>الجنسية</th>
+                    <th>الراتب</th>
+                    <th>تاريخ المباشرة</th>
+                    <th>الحالة</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var emp in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="emp-cell">
+                                <div class="emp-avatar"
+                                     style="background:#2563a8">
+                                    @emp.FullNameAr.Substring(0,
+                                        Math.Min(2, emp.FullNameAr.Length))
+                                </div>
+                                <div>
+                                    <div class="emp-name">@emp.FullNameAr</div>
+                                    <div class="emp-sub">
+                                        @emp.EmployeeCode — @emp.JobTitle
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="il-badge @(emp.Nationality ==
+                                Intilaqah.Models.NationalityType.Saudi
+                                ? "active" : "info")">
+                                @(emp.Nationality ==
+                                    Intilaqah.Models.NationalityType.Saudi
+                                    ? "سعودي" : "وافد")
+                            </span>
+                        </td>
+                        <td>@emp.BasicSalary.ToString("N0") ر.س</td>
+                        <td>@emp.HireDate.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            <span class="il-badge @(emp.IsActive
+                                ? "active" : "inactive")">
+                                @(emp.IsActive ? "نشط" : "غير نشط")
+                            </span>
+                        </td>
+                        <td>
+                            <a href="/CompanyAdmin/Employees/Details/@emp.Id"
+                               class="btn-il btn-il-outline btn-il-sm">
+                                <i class="ti ti-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

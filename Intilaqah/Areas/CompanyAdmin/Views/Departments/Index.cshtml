@@ -1,4 +1,4 @@
-@model IEnumerable<Intilaqah.Models.Department>
+@model IEnumerable<Intilaqah.Models.ViewModels.CompanyAdmin.DepartmentListItemVM>
 @{
     ViewData["Title"] = "الأقسام";
 }
@@ -6,12 +6,15 @@
 <div class="il-page-header">
     <div>
         <h1 class="page-title">الأقسام</h1>
-        <div class="page-subtitle">إدارة أقسام المنشأة</div>
+        <div class="page-subtitle">
+            الإجمالي: @ViewBag.TotalCount |
+            نشط: @ViewBag.ActiveCount
+        </div>
     </div>
     <div class="page-actions">
-        <button class="btn-il btn-il-primary" data-bs-toggle="modal" data-bs-target="#addDeptModal">
-            <i class="ti ti-plus"></i> إضافة قسم
-        </button>
+        <a href="/CompanyAdmin/Departments/Create" class="btn-il btn-il-primary">
+            <i class="ti ti-building-plus"></i> إضافة قسم
+        </a>
     </div>
 </div>
 
@@ -19,12 +22,12 @@
     @if (!Model.Any())
     {
         <div class="text-center py-5" style="color:var(--il-muted)">
-            <i class="ti ti-building" style="font-size:48px;opacity:.2"></i>
-            <div class="mt-3" style="font-size:14px">لا توجد أقسام مضافة بعد</div>
-            <button class="btn-il btn-il-primary mt-3"
-                    data-bs-toggle="modal" data-bs-target="#addDeptModal">
-                <i class="ti ti-plus"></i> إضافة أول قسم
-            </button>
+            <i class="ti ti-building" style="font-size:48px;opacity:.25"></i>
+            <div class="mt-3" style="font-size:14px">لا توجد أقسام مسجلة بعد</div>
+            <a href="/CompanyAdmin/Departments/Create"
+               class="btn-il btn-il-primary mt-3 d-inline-flex">
+                <i class="ti ti-building-plus"></i> إضافة قسم
+            </a>
         </div>
     }
     else
@@ -33,9 +36,11 @@
             <table class="il-table">
                 <thead>
                     <tr>
-                        <th>اسم القسم</th>
+                        <th>القسم</th>
+                        <th>المدير</th>
                         <th>عدد الموظفين</th>
                         <th>الحالة</th>
+                        <th>تاريخ الإنشاء</th>
                         <th>إجراءات</th>
                     </tr>
                 </thead>
@@ -43,33 +48,90 @@
                     @foreach (var dept in Model)
                     {
                         <tr>
-                            <td class="fw-bold">@dept.Name</td>
+                            <td><strong>@dept.Name</strong></td>
+                            <td>@dept.ManagerName</td>
                             <td>
-                                <span class="il-badge info">
-                                    @dept.Employees.Count() موظف
-                                </span>
+                                @if (dept.EmployeeCount > 0)
+                                {
+                                    <a href="/CompanyAdmin/Departments/Employees/@dept.Id"
+                                       class="il-badge info">
+                                        @dept.EmployeeCount موظف
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span style="color:var(--il-muted);font-size:12px">
+                                        لا يوجد موظفون
+                                    </span>
+                                }
                             </td>
                             <td>
                                 <span class="il-badge @(dept.IsActive ? "active" : "inactive")">
                                     @(dept.IsActive ? "نشط" : "غير نشط")
                                 </span>
                             </td>
+                            <td>@dept.CreatedAt.ToString("dd/MM/yyyy")</td>
                             <td>
-                                <div class="il-actions-group">
-                                    <button class="il-action-btn"
-                                            data-tooltip="تعديل"
-                                            onclick="openEdit('@dept.Id', '@dept.Name')">
-                                        <i class="ti ti-edit"></i>
+                                <div class="dropdown">
+                                    <button class="btn-il btn-il-outline btn-il-sm"
+                                            type="button" data-bs-toggle="dropdown">
+                                        إجراءات <i class="ti ti-chevron-down"></i>
                                     </button>
-                                    <form asp-action="ToggleActive" asp-route-id="@dept.Id"
-                                          method="post" class="d-inline">
-                                        @Html.AntiForgeryToken()
-                                        <button type="submit"
-                                                class="il-action-btn @(dept.IsActive ? "il-action-danger" : "il-action-success")"
-                                                data-tooltip="@(dept.IsActive ? "تعطيل" : "تفعيل")">
-                                            <i class="ti ti-@(dept.IsActive ? "toggle-left" : "toggle-right")"></i>
-                                        </button>
-                                    </form>
+                                    <ul class="dropdown-menu"
+                                        style="font-family:'Tajawal',sans-serif">
+                                        <li>
+                                            <a class="dropdown-item"
+                                               href="/CompanyAdmin/Departments/Edit/@dept.Id">
+                                                <i class="ti ti-edit"
+                                                   style="margin-left:6px"></i> تعديل
+                                            </a>
+                                        </li>
+                                        @if (dept.EmployeeCount > 0)
+                                        {
+                                            <li>
+                                                <a class="dropdown-item"
+                                                   href="/CompanyAdmin/Departments/Employees/@dept.Id">
+                                                    <i class="ti ti-users"
+                                                       style="margin-left:6px"></i>
+                                                    عرض الموظفين
+                                                </a>
+                                            </li>
+                                        }
+                                        <li><hr class="dropdown-divider" /></li>
+                                        <li>
+                                            <form asp-action="ToggleActive"
+                                                  asp-route-id="@dept.Id"
+                                                  method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit"
+                                                        class="dropdown-item"
+                                                        data-confirm="@(dept.IsActive
+                                                            ? $"تعطيل قسم {dept.Name}؟"
+                                                            : $"تفعيل قسم {dept.Name}؟")">
+                                                    <i class="ti ti-@(dept.IsActive
+                                                        ? "toggle-left" : "toggle-right")"
+                                                       style="margin-left:6px"></i>
+                                                    @(dept.IsActive ? "تعطيل" : "تفعيل")
+                                                </button>
+                                            </form>
+                                        </li>
+                                        @if (dept.EmployeeCount == 0)
+                                        {
+                                            <li>
+                                                <form asp-action="Delete"
+                                                      asp-route-id="@dept.Id"
+                                                      method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit"
+                                                            class="dropdown-item text-danger"
+                                                            data-confirm="هل تريد حذف قسم '@dept.Name' نهائياً؟">
+                                                        <i class="ti ti-trash"
+                                                           style="margin-left:6px"></i> حذف
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        }
+                                    </ul>
                                 </div>
                             </td>
                         </tr>
@@ -79,74 +141,3 @@
         </div>
     }
 </div>
-
-<!-- Add Department Modal -->
-<div class="modal fade" id="addDeptModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius:16px;font-family:'Tajawal',sans-serif">
-            <form asp-action="Create" method="post">
-                @Html.AntiForgeryToken()
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold">
-                        <i class="ti ti-building-plus me-2" style="color:var(--il-primary-light)"></i>
-                        إضافة قسم جديد
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body py-3">
-                    <label class="il-form-label">اسم القسم</label>
-                    <input name="name" class="il-form-control"
-                           placeholder="مثال: الموارد البشرية"
-                           required autofocus />
-                </div>
-                <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn-il btn-il-outline"
-                            data-bs-dismiss="modal">إلغاء</button>
-                    <button type="submit" class="btn-il btn-il-primary">
-                        <i class="ti ti-device-floppy"></i> حفظ
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Edit Department Modal -->
-<div class="modal fade" id="editDeptModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius:16px;font-family:'Tajawal',sans-serif">
-            <form asp-action="Edit" method="post">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="id" id="editDeptId" />
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold">
-                        <i class="ti ti-edit me-2" style="color:var(--il-primary-light)"></i>
-                        تعديل القسم
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body py-3">
-                    <label class="il-form-label">اسم القسم</label>
-                    <input name="name" id="editDeptName" class="il-form-control" required />
-                </div>
-                <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn-il btn-il-outline"
-                            data-bs-dismiss="modal">إلغاء</button>
-                    <button type="submit" class="btn-il btn-il-primary">
-                        <i class="ti ti-device-floppy"></i> حفظ التعديلات
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-@section Scripts {
-<script>
-function openEdit(id, name) {
-    document.getElementById('editDeptId').value = id;
-    document.getElementById('editDeptName').value = name;
-    new bootstrap.Modal(document.getElementById('editDeptModal')).show();
-}
-</script>
-}
