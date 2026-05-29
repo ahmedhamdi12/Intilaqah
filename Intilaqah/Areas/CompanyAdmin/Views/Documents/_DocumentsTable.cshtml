@@ -1,0 +1,81 @@
+@model IEnumerable<Intilaqah.Models.ViewModels.CompanyAdmin.DocumentListItemVM>
+
+<div class="table-wrap">
+    <table class="il-table">
+        <thead>
+            <tr>
+                <th>الوثيقة</th>
+                <th>النوع</th>
+                <th>المرتبطة بـ</th>
+                <th>تاريخ الانتهاء</th>
+                <th>المتبقي</th>
+                <th>ملف</th>
+                <th>إجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var doc in Model)
+            {
+                <tr>
+                    <td><strong>@doc.DocType</strong></td>
+                    <td>
+                        <span class="il-badge @(doc.EntityType == Intilaqah.Models.DocumentEntityType.Employee ? "info" : "active")">
+                            @(doc.EntityType == Intilaqah.Models.DocumentEntityType.Employee
+                                ? "موظف" : "شركة")
+                        </span>
+                    </td>
+                    <td>
+                        @if (doc.EntityType == Intilaqah.Models.DocumentEntityType.Employee)
+                        {
+                            <a href="/CompanyAdmin/Documents/Employee?employeeId=@doc.EntityId"
+                               style="color:var(--il-primary-light)">
+                                @doc.EntityName
+                            </a>
+                        }
+                        else
+                        {
+                            @doc.EntityName
+                        }
+                    </td>
+                    <td>@(doc.ExpiryDate?.ToString("dd/MM/yyyy") ?? "—")</td>
+                    <td>
+                        <span class="il-badge @doc.UrgencyClass">
+                            @doc.UrgencyLabel
+                        </span>
+                    </td>
+                    <td>
+                        @if (doc.HasFile)
+                        {
+                            <a href="/CompanyAdmin/Documents/Download/@doc.Id" target="_blank"
+                               class="btn-il btn-il-outline btn-il-sm">
+                                <i class="ti ti-download"></i> عرض
+                            </a>
+                        }
+                        else
+                        {
+                            <span style="color:var(--il-muted);font-size:12px">لا يوجد</span>
+                        }
+                    </td>
+                    <td>
+                        <div class="d-flex gap-1">
+                            <a href="/CompanyAdmin/Documents/Upload?entityId=@doc.EntityId&entityType=@doc.EntityType"
+                               class="btn-il btn-il-outline btn-il-sm"
+                               title="رفع نسخة جديدة">
+                                <i class="ti ti-upload"></i>
+                            </a>
+                            <form asp-action="Delete" asp-route-id="@doc.Id"
+                                  method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit"
+                                        class="btn-il btn-il-danger btn-il-sm"
+                                        data-confirm="هل تريد حذف هذه الوثيقة؟">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

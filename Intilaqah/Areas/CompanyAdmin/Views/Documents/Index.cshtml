@@ -1,0 +1,133 @@
+@model Intilaqah.Models.ViewModels.CompanyAdmin.DocumentsAlertVM
+@{
+    ViewData["Title"] = "الوثائق والتراخيص";
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">الوثائق والتراخيص</h1>
+        <div class="page-subtitle">مراقبة انتهاء الوثائق وتنبيهات التجديد</div>
+    </div>
+    <div class="page-actions">
+        <a href="/CompanyAdmin/Documents/Company" class="btn-il btn-il-outline">
+            <i class="ti ti-building"></i> وثائق الشركة
+        </a>
+        <a href="/CompanyAdmin/Employees" class="btn-il btn-il-primary">
+            <i class="ti ti-users"></i> وثائق الموظفين
+        </a>
+    </div>
+</div>
+
+@* KPI Cards *@
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="il-kpi">
+            <div class="kpi-top">
+                <div class="kpi-icon blue"><i class="ti ti-files"></i></div>
+            </div>
+            <div class="kpi-value">@Model.TotalDocuments</div>
+            <div class="kpi-label">إجمالي الوثائق</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="il-kpi">
+            <div class="kpi-top">
+                <div class="kpi-icon red"><i class="ti ti-file-x"></i></div>
+            </div>
+            <div class="kpi-value @(Model.ExpiredCount > 0 ? "text-danger-il" : "")">
+                @Model.ExpiredCount
+            </div>
+            <div class="kpi-label">وثائق منتهية</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="il-kpi">
+            <div class="kpi-top">
+                <div class="kpi-icon amber"><i class="ti ti-clock-alert"></i></div>
+            </div>
+            <div class="kpi-value @(Model.Expiring30Count > 0 ? "text-danger-il" : "")">
+                @Model.Expiring30Count
+            </div>
+            <div class="kpi-label">تنتهي خلال 30 يوم</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="il-kpi">
+            <div class="kpi-top">
+                <div class="kpi-icon green"><i class="ti ti-circle-check"></i></div>
+            </div>
+            <div class="kpi-value text-success-il">@Model.ValidCount</div>
+            <div class="kpi-label">وثائق سارية</div>
+        </div>
+    </div>
+</div>
+
+@* Urgent — Expired *@
+@if (Model.ExpiredDocs.Any())
+{
+    <div class="il-card mb-3" style="border-right:3px solid var(--il-danger)">
+        <div class="il-card-header">
+            <h2 class="card-title" style="color:var(--il-danger)">
+                <i class="ti ti-alert-circle"></i>
+                وثائق منتهية — يجب التجديد فوراً (@Model.ExpiredCount)
+            </h2>
+        </div>
+        @await Html.PartialAsync("_DocumentsTable", Model.ExpiredDocs)
+    </div>
+}
+
+@* Expiring within 30 days *@
+@if (Model.Expiring30Docs.Any())
+{
+    <div class="il-card mb-3" style="border-right:3px solid #f97316">
+        <div class="il-card-header">
+            <h2 class="card-title" style="color:#ea580c">
+                <i class="ti ti-clock"></i>
+                تنتهي خلال 30 يوم (@Model.Expiring30Count)
+            </h2>
+        </div>
+        @await Html.PartialAsync("_DocumentsTable", Model.Expiring30Docs)
+    </div>
+}
+
+@* Expiring within 60 days *@
+@if (Model.Expiring60Docs.Any())
+{
+    <div class="il-card mb-3" style="border-right:3px solid var(--il-warning)">
+        <div class="il-card-header">
+            <h2 class="card-title" style="color:var(--il-warning)">
+                <i class="ti ti-clock"></i>
+                تنتهي خلال 60 يوم (@Model.Expiring60Count)
+            </h2>
+        </div>
+        @await Html.PartialAsync("_DocumentsTable", Model.Expiring60Docs)
+    </div>
+}
+
+@* Expiring within 90 days *@
+@if (Model.Expiring90Docs.Any())
+{
+    <div class="il-card mb-3" style="border-right:3px solid var(--il-info)">
+        <div class="il-card-header">
+            <h2 class="card-title" style="color:var(--il-info)">
+                <i class="ti ti-info-circle"></i>
+                تنتهي خلال 90 يوم (@Model.Expiring90Count)
+            </h2>
+        </div>
+        @await Html.PartialAsync("_DocumentsTable", Model.Expiring90Docs)
+    </div>
+}
+
+@* All clear *@
+@if (!Model.ExpiredDocs.Any() && !Model.Expiring30Docs.Any()
+    && !Model.Expiring60Docs.Any() && !Model.Expiring90Docs.Any())
+{
+    <div class="il-card mb-3">
+        <div class="text-center py-5" style="color:var(--il-success)">
+            <i class="ti ti-circle-check" style="font-size:52px;opacity:.6"></i>
+            <div class="mt-3" style="font-size:15px;font-weight:600">
+                ممتاز! لا توجد وثائق تنتهي خلال 90 يوماً
+            </div>
+        </div>
+    </div>
+}

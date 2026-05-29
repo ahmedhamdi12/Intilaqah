@@ -1,0 +1,82 @@
+@model IEnumerable<Intilaqah.Models.ViewModels.CompanyAdmin.DocumentListItemVM>
+@{
+    ViewData["Title"] = "وثائق الشركة";
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">وثائق الشركة</h1>
+        <div class="page-subtitle">@ViewBag.TenantName</div>
+    </div>
+    <div class="page-actions">
+        <a href="/CompanyAdmin/Documents/Upload?entityId=@(User.FindFirst("TenantId")?.Value)&entityType=Company"
+           class="btn-il btn-il-primary">
+            <i class="ti ti-upload"></i> رفع وثيقة
+        </a>
+    </div>
+</div>
+
+@* Quick reference cards for required company documents *@
+<div class="row g-3 mb-4">
+    @{
+        var requiredDocs = new[]
+        {
+            ("سجل تجاري",            "ti-building-store"),
+            ("رخصة بلدية",            "ti-home-check"),
+            ("شهادة زكاة",            "ti-certificate"),
+            ("اشتراك غرفة تجارية",   "ti-building-community"),
+        };
+        foreach (var (docName, icon) in requiredDocs)
+        {
+            var existing = Model.FirstOrDefault(d => d.DocType == docName);
+            var cardClass = existing == null ? "red"
+                          : existing.UrgencyClass == "active" ? "green"
+                          : existing.UrgencyClass;
+        <div class="col-6 col-md-3">
+            <div class="il-kpi">
+                <div class="kpi-top">
+                    <div class="kpi-icon @cardClass">
+                        <i class="ti @icon"></i>
+                    </div>
+                    @if (existing != null)
+                    {
+                        <span class="il-badge @existing.UrgencyClass" style="font-size:10px">
+                            @existing.UrgencyLabel
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="il-badge danger" style="font-size:10px">غير مرفوع</span>
+                    }
+                </div>
+                <div style="font-size:13px;font-weight:600;margin-top:4px">@docName</div>
+                @if (existing?.ExpiryDate != null)
+                {
+                    <div class="kpi-sub">
+                        تنتهي: @existing.ExpiryDate?.ToString("dd/MM/yyyy")
+                    </div>
+                }
+            </div>
+        </div>
+        }
+    }
+</div>
+
+<div class="il-card">
+    <div class="il-card-header">
+        <h2 class="card-title">
+            <i class="ti ti-files"></i> جميع الوثائق (@Model.Count())
+        </h2>
+    </div>
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5" style="color:var(--il-muted)">
+            <i class="ti ti-file-off" style="font-size:42px;opacity:.25"></i>
+            <div class="mt-2" style="font-size:13px">لا توجد وثائق مرفوعة للشركة</div>
+        </div>
+    }
+    else
+    {
+        @await Html.PartialAsync("_DocumentsTable", Model)
+    }
+</div>

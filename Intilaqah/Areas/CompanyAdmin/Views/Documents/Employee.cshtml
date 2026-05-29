@@ -1,0 +1,47 @@
+@model IEnumerable<Intilaqah.Models.ViewModels.CompanyAdmin.DocumentListItemVM>
+@{
+    ViewData["Title"] = "وثائق الموظف";
+    var employee = ViewBag.Employee as Intilaqah.Models.Employee;
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">وثائق: @employee?.FullNameAr</h1>
+        <div class="page-subtitle">@employee?.EmployeeCode — @employee?.JobTitle</div>
+    </div>
+    <div class="page-actions">
+        <a href="/CompanyAdmin/Documents/Upload?entityId=@employee?.Id&entityType=Employee"
+           class="btn-il btn-il-primary">
+            <i class="ti ti-upload"></i> رفع وثيقة
+        </a>
+        <a href="/CompanyAdmin/Employees/Details/@employee?.Id"
+           class="btn-il btn-il-outline">
+            <i class="ti ti-arrow-right"></i> ملف الموظف
+        </a>
+    </div>
+</div>
+
+<div class="il-card">
+    <div class="il-card-header">
+        <h2 class="card-title">
+            <i class="ti ti-files"></i> الوثائق (@Model.Count())
+        </h2>
+    </div>
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5" style="color:var(--il-muted)">
+            <i class="ti ti-file-off" style="font-size:42px;opacity:.25"></i>
+            <div class="mt-2" style="font-size:13px">
+                لا توجد وثائق مرفقة لهذا الموظف
+            </div>
+            <a href="/CompanyAdmin/Documents/Upload?entityId=@employee?.Id&entityType=Employee"
+               class="btn-il btn-il-primary mt-3 d-inline-flex">
+                <i class="ti ti-upload"></i> رفع أول وثيقة
+            </a>
+        </div>
+    }
+    else
+    {
+        @await Html.PartialAsync("_DocumentsTable", Model)
+    }
+</div>

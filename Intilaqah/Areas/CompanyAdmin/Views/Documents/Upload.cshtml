@@ -1,0 +1,75 @@
+@model Intilaqah.Models.ViewModels.CompanyAdmin.DocumentUploadVM
+@{
+    ViewData["Title"] = "رفع وثيقة";
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">رفع وثيقة جديدة</h1>
+        <div class="page-subtitle">
+            @(Model.EntityType == Intilaqah.Models.DocumentEntityType.Employee
+                ? $"للموظف: {Model.EntityName}"
+                : $"للشركة: {Model.EntityName}")
+        </div>
+    </div>
+    <div class="page-actions">
+        <a href="javascript:history.back()" class="btn-il btn-il-outline">
+            <i class="ti ti-arrow-right"></i> رجوع
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="il-card">
+            <form asp-action="Upload" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input asp-for="EntityId"   type="hidden" />
+                <input asp-for="EntityType" type="hidden" />
+
+                <div class="mb-3">
+                    <label asp-for="DocType" class="il-form-label"></label>
+                    <select asp-for="DocType"
+                            asp-items="Model.DocTypeOptions"
+                            class="il-form-control">
+                        <option value="">-- اختر نوع الوثيقة --</option>
+                    </select>
+                    <span asp-validation-for="DocType"
+                          class="text-danger" style="font-size:12px"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ExpiryDate" class="il-form-label"></label>
+                    <input asp-for="ExpiryDate" type="date" class="il-form-control" />
+                    <div style="font-size:11.5px;color:var(--il-muted);margin-top:4px">
+                        اتركه فارغاً إذا لم يكن للوثيقة تاريخ انتهاء
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="File" class="il-form-label"></label>
+                    <input asp-for="File" type="file"
+                           class="il-form-control"
+                           accept=".pdf,.jpg,.jpeg,.png" />
+                    <div style="font-size:11.5px;color:var(--il-muted);margin-top:4px">
+                        الصيغ المسموحة: PDF, JPG, PNG — الحجم الأقصى: 5MB
+                    </div>
+                    <span asp-validation-for="File"
+                          class="text-danger" style="font-size:12px"></span>
+                </div>
+
+                <div class="d-flex gap-2 justify-content-end">
+                    <a href="javascript:history.back()"
+                       class="btn-il btn-il-outline">إلغاء</a>
+                    <button type="submit" class="btn-il btn-il-primary">
+                        <i class="ti ti-upload"></i> رفع الوثيقة
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<partial name="_ValidationScriptsPartial" />
+}

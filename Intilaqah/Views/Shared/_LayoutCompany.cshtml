@@ -79,7 +79,15 @@
             <li class="nav-item"><a class="nav-link" href="/CompanyAdmin/Payroll"><i class="ti ti-cash me-2"></i>مسير الرواتب <span class="badge bg-danger ms-auto">!</span></a></li>
             <li class="nav-item"><a class="nav-link" href="/CompanyAdmin/Advances"><i class="ti ti-coin me-2"></i>السلف</a></li>
             <li class="nav-item"><a class="nav-link" href="/CompanyAdmin/Nitaqat"><i class="ti ti-chart-pie me-2"></i>نطاقات</a></li>
-            <li class="nav-item"><a class="nav-link" href="/CompanyAdmin/Documents"><i class="ti ti-file-text me-2"></i>الوثائق @(ViewBag.ExpiringDocs > 0 ? $"<span class=\"badge bg-warning ms-auto\">{ViewBag.ExpiringDocs}</span>" : "")</a></li>
+            <li class="nav-item">
+                <a class="nav-link" href="/CompanyAdmin/Documents">
+                    <i class="ti ti-file-certificate me-2"></i>الوثائق والتراخيص
+                    @if (ViewBag.ExpiringDocs != null && (int)ViewBag.ExpiringDocs > 0)
+                    {
+                        <span class="badge bg-danger ms-auto">@ViewBag.ExpiringDocs</span>
+                    }
+                </a>
+            </li>
             <li class="nav-item"><a class="nav-link" href="/CompanyAdmin/Settings"><i class="ti ti-settings me-2"></i>الإعدادات</a></li>
             <li class="nav-item"><a class="nav-link" href="/CompanyAdmin/Users"><i class="ti ti-user-shield me-2"></i>المستخدمين</a></li>
         </ul>

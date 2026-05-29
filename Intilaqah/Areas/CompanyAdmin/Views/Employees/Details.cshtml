@@ -147,7 +147,10 @@
         <div class="il-card h-100">
             <div class="il-card-header d-flex justify-content-between align-items-center">
                 <h3 class="card-title mb-0"><i class="ti ti-files me-2"></i> وثائق الموظف</h3>
-                <a href="#" class="btn btn-sm btn-il-outline">إضافة وثيقة</a>
+                <div class="d-flex gap-2">
+                    <a href="/CompanyAdmin/Documents/Employee?employeeId=@emp?.Id" class="btn btn-sm btn-il-outline">إدارة الوثائق</a>
+                    <a href="/CompanyAdmin/Documents/Upload?entityId=@emp?.Id&entityType=Employee" class="btn btn-sm btn-il-primary">إضافة وثيقة</a>
+                </div>
             </div>
             <div class="p-3">
                 @if (docs.Any())
