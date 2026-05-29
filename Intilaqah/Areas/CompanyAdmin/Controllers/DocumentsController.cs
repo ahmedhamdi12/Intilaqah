@@ -1,5 +1,3 @@
-using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
 using Intilaqah.Models;
 using Intilaqah.Models.ViewModels.CompanyAdmin;
 using Intilaqah.UnitOfWork;
@@ -18,23 +16,19 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
     {
         private readonly IUnitOfWork        _uow;
         private readonly IWebHostEnvironment _env;
-        private readonly Cloudinary         _cloudinary;
+        private readonly Supabase.Client    _supabase;
+        private readonly string             _bucketName;
 
         private static readonly string[] AllowedExtensions =
             { ".pdf", ".jpg", ".jpeg", ".png" };
         private const long MaxFileSizeBytes = 5 * 1024 * 1024;
 
-        public DocumentsController(IUnitOfWork uow, IWebHostEnvironment env, IConfiguration config)
+        public DocumentsController(IUnitOfWork uow, IWebHostEnvironment env, IConfiguration config, Supabase.Client supabase)
         {
             _uow = uow;
             _env = env;
-            
-            var account = new Account(
-                config["Cloudinary:CloudName"],
-                config["Cloudinary:ApiKey"],
-                config["Cloudinary:ApiSecret"]
-            );
-            _cloudinary = new Cloudinary(account);
+            _supabase = supabase;
+            _bucketName = config["Supabase:BucketName"] ?? "documnts";
         }
 
         // ── GET /CompanyAdmin/Documents ───────────────────────────────
@@ -173,18 +167,24 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
                     return View(model);
                 }
 
+                var uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(model.File.FileName)}";
+
                 await using var stream = model.File.OpenReadStream();
+                using var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream);
+                var bytes = memoryStream.ToArray();
+
+                var contentType = model.File.ContentType;
+
+                // Upload to Supabase
+                await _supabase.Storage.From(_bucketName).Upload(
+                    bytes,
+                    uniqueFileName,
+                    new Supabase.Storage.FileOptions { ContentType = contentType }
+                );
                 
-                // Use ImageUploadParams even for PDFs so Cloudinary allows inline previews
-                // and avoids 'raw' file access restrictions.
-                var uploadParams = new ImageUploadParams()
-                {
-                    File = new FileDescription(model.File.FileName, stream),
-                    Folder = "intilaqah/documents",
-                    PublicId = $"{Guid.NewGuid()}_{Path.GetFileName(model.File.FileName)}"
-                };
-                var uploadResult = await _cloudinary.UploadAsync(uploadParams);
-                filePath = uploadResult.SecureUrl.ToString();
+                // Save the unique file name to the database
+                filePath = uniqueFileName;
             }
 
             var document = new Document
@@ -214,57 +214,38 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
             var doc = await _uow.Documents.GetByIdAsync(id);
             if (doc == null || string.IsNullOrEmpty(doc.FilePath)) return NotFound();
 
+            if (doc.FilePath.StartsWith("http"))
+            {
+                // Fallback for old Cloudinary URLs: redirect directly
+                return Redirect(doc.FilePath);
+            }
+
             try
             {
-                var uri = new Uri(doc.FilePath);
-                var segments = uri.AbsolutePath.Split('/');
-                int uploadIndex = Array.IndexOf(segments, "upload");
-
-                string downloadUrl = doc.FilePath;
-
-                if (uploadIndex != -1 && segments.Length > uploadIndex + 2)
-                {
-                    var afterUpload = segments.Skip(uploadIndex + 1).ToArray();
-                    int startIdx = (afterUpload.Length > 0 && afterUpload[0].StartsWith("v") 
-                        && long.TryParse(afterUpload[0].Substring(1), out _)) ? 1 : 0;
-
-                    // Correctly unescape the public_id to avoid double-encoding %20 -> %2520
-                    var publicId = Uri.UnescapeDataString(string.Join("/", afterUpload.Skip(startIdx)));
-                    var resourceType = Array.IndexOf(segments, "raw") != -1 ? "raw" : "image";
-
-                    // Generate a signed delivery URL to bypass any strict delivery 401s
-                    downloadUrl = _cloudinary.Api.UrlImgUp
-                        .ResourceType(resourceType)
-                        .Signed(true)
-                        .BuildUrl(publicId);
-                }
-
-                using var http = new HttpClient();
-                var response = await http.GetAsync(downloadUrl);
+                // Download file bytes from Supabase
+                var bytes = await _supabase.Storage.From(_bucketName).Download(doc.FilePath, null);
                 
-                if (response.IsSuccessStatusCode)
+                // Force PDF and images to render inline in browser instead of downloading
+                var contentType = "application/octet-stream";
+                if (doc.FilePath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
                 {
-                    var bytes = await response.Content.ReadAsByteArrayAsync();
-                    
-                    // Force PDF to render inline in browser instead of downloading
-                    var contentType = response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream";
-                    if (doc.FilePath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
-                    {
-                        contentType = "application/pdf";
-                    }
+                    contentType = "application/pdf";
+                }
+                else if (doc.FilePath.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || doc.FilePath.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase))
+                {
+                    contentType = "image/jpeg";
+                }
+                else if (doc.FilePath.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                {
+                    contentType = "image/png";
+                }
 
-                    // By returning File without the fileName parameter, ASP.NET Core sends Content-Disposition: inline
-                    return File(bytes, contentType);
-                }
-                else
-                {
-                    var errorMsg = await response.Content.ReadAsStringAsync();
-                    return Content($"فشل جلب الملف من Cloudinary. الحالة: {response.StatusCode}\nالرسالة: {errorMsg}");
-                }
+                // By returning File without the fileName parameter, ASP.NET Core sends Content-Disposition: inline
+                return File(bytes, contentType);
             }
             catch (Exception ex)
             {
-                return Content($"حدث خطأ أثناء الاتصال: {ex.Message}");
+                return Content($"حدث خطأ أثناء جلب الملف من Supabase: {ex.Message}");
             }
         }
 
@@ -277,25 +258,12 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
             var doc = await _uow.Documents.GetByIdAsync(id);
             if (doc == null) return NotFound();
 
-            if (!string.IsNullOrEmpty(doc.FilePath) && doc.FilePath.Contains("res.cloudinary.com"))
+            if (!string.IsNullOrEmpty(doc.FilePath) && !doc.FilePath.StartsWith("http"))
             {
                 try
                 {
-                    var uri = new Uri(doc.FilePath);
-                    var segments = uri.AbsolutePath.Split('/');
-                    int uploadIndex = Array.IndexOf(segments, "upload");
-                    if (uploadIndex != -1 && segments.Length > uploadIndex + 2)
-                    {
-                        var publicIdSegments = segments.Skip(uploadIndex + 2).ToArray();
-                        var publicId = string.Join("/", publicIdSegments);
-                        
-                        var delParams = new DelResParams()
-                        {
-                            PublicIds = new List<string> { publicId },
-                            ResourceType = ResourceType.Raw
-                        };
-                        await _cloudinary.DeleteResourcesAsync(delParams);
-                    }
+                    // Remove from Supabase Storage
+                    await _supabase.Storage.From(_bucketName).Remove(new List<string> { doc.FilePath });
                 }
                 catch
                 {

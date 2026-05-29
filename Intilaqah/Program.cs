@@ -48,6 +48,15 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Register Custom Claims Factory (Removed, using AddClaimsPrincipalFactory instead)
 
+// Register Supabase Client
+builder.Services.AddScoped<Supabase.Client>(provider =>
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var url = config["Supabase:Url"];
+    var key = config["Supabase:SecretKey"];
+    var options = new Supabase.SupabaseOptions { AutoConnectRealtime = false };
+    return new Supabase.Client(url, key, options);
+});
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
