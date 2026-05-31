@@ -22,7 +22,7 @@
 <div class="row justify-content-center">
     <div class="col-lg-6">
         <div class="il-card">
-            <form asp-action="Upload" method="post" enctype="multipart/form-data">
+            <form id="uploadForm" asp-action="Upload" method="post" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
                 <input asp-for="EntityId"   type="hidden" />
                 <input asp-for="EntityType" type="hidden" />
@@ -70,6 +70,34 @@
     </div>
 </div>
 
+<!-- Loading Overlay -->
+<div id="uploadOverlay" class="il-upload-overlay">
+    <div class="il-upload-card">
+        <div class="il-spinner-ring">
+            <div class="il-spinner-icon">
+                <i class="ti ti-cloud-upload"></i>
+            </div>
+        </div>
+        <div class="il-upload-title">جاري رفع الوثيقة...</div>
+        <div class="il-upload-subtitle">يتم رفع الملف وحفظ البيانات، يرجى الانتظار</div>
+        <div class="il-upload-progress">
+            <div class="il-upload-progress-bar"></div>
+        </div>
+        <div class="il-upload-dots">
+            <span></span><span></span><span></span>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
 <partial name="_ValidationScriptsPartial" />
+<script>
+    document.getElementById('uploadForm').addEventListener('submit', function (e) {
+        var fileInput = this.querySelector('input[type="file"]');
+        if (!fileInput.value) return;
+        // Check client-side validation
+        if (typeof jQuery !== 'undefined' && !$(this).valid()) return;
+        document.getElementById('uploadOverlay').classList.add('active');
+    });
+</script>
 }
