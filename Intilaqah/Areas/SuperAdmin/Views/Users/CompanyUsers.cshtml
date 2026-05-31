@@ -125,23 +125,23 @@
                                 @item.CreatedAt.ToString("dd/MM/yyyy")
                             </td>
                             <td class="text-end">
-                                <div class="d-flex gap-2 justify-content-end">
-                                    <a asp-action="ResetPassword" asp-route-userId="@item.Id" class="btn btn-sm btn-light text-primary" data-bs-toggle="tooltip" title="تغيير كلمة المرور">
-                                        <i class="ti ti-key fs-5"></i>
+                                <div class="il-actions-group justify-content-end">
+                                    <a asp-action="ResetPassword" asp-route-userId="@item.Id" class="il-action-btn" data-tooltip="تغيير كلمة المرور">
+                                        <i class="ti ti-key"></i>
                                     </a>
                                     
-                                    <form asp-action="ToggleActive" asp-route-userId="@item.Id" method="post" class="m-0">
+                                    <form asp-action="ToggleActive" asp-route-userId="@item.Id" method="post" class="m-0 d-inline">
                                         @Html.AntiForgeryToken()
                                         @if (item.IsActive)
                                         {
-                                            <button type="submit" class="btn btn-sm btn-light text-danger" data-bs-toggle="tooltip" title="تعطيل" data-confirm="هل أنت متأكد من تعطيل هذا المستخدم؟">
-                                                <i class="ti ti-user-off fs-5"></i>
+                                            <button type="submit" class="il-action-btn il-action-danger" data-tooltip="تعطيل" data-confirm="هل أنت متأكد من تعطيل هذا المستخدم؟">
+                                                <i class="ti ti-user-off"></i>
                                             </button>
                                         }
                                         else
                                         {
-                                            <button type="submit" class="btn btn-sm btn-light text-success" data-bs-toggle="tooltip" title="تفعيل">
-                                                <i class="ti ti-user-check fs-5"></i>
+                                            <button type="submit" class="il-action-btn il-action-success" data-tooltip="تفعيل">
+                                                <i class="ti ti-user-check"></i>
                                             </button>
                                         }
                                     </form>

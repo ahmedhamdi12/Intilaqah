@@ -72,66 +72,40 @@
                             </td>
                             <td>@dept.CreatedAt.ToString("dd/MM/yyyy")</td>
                             <td>
-                                <div class="dropdown">
-                                    <button class="btn-il btn-il-outline btn-il-sm"
-                                            type="button" data-bs-toggle="dropdown">
-                                        إجراءات <i class="ti ti-chevron-down"></i>
-                                    </button>
-                                    <ul class="dropdown-menu"
-                                        style="font-family:'Tajawal',sans-serif">
-                                        <li>
-                                            <a class="dropdown-item"
-                                               href="/CompanyAdmin/Departments/Edit/@dept.Id">
-                                                <i class="ti ti-edit"
-                                                   style="margin-left:6px"></i> تعديل
-                                            </a>
-                                        </li>
-                                        @if (dept.EmployeeCount > 0)
-                                        {
-                                            <li>
-                                                <a class="dropdown-item"
-                                                   href="/CompanyAdmin/Departments/Employees/@dept.Id">
-                                                    <i class="ti ti-users"
-                                                       style="margin-left:6px"></i>
-                                                    عرض الموظفين
-                                                </a>
-                                            </li>
-                                        }
-                                        <li><hr class="dropdown-divider" /></li>
-                                        <li>
-                                            <form asp-action="ToggleActive"
-                                                  asp-route-id="@dept.Id"
-                                                  method="post" class="d-inline">
-                                                @Html.AntiForgeryToken()
-                                                <button type="submit"
-                                                        class="dropdown-item"
-                                                        data-confirm="@(dept.IsActive
-                                                            ? $"تعطيل قسم {dept.Name}؟"
-                                                            : $"تفعيل قسم {dept.Name}؟")">
-                                                    <i class="ti ti-@(dept.IsActive
-                                                        ? "toggle-left" : "toggle-right")"
-                                                       style="margin-left:6px"></i>
-                                                    @(dept.IsActive ? "تعطيل" : "تفعيل")
-                                                </button>
-                                            </form>
-                                        </li>
-                                        @if (dept.EmployeeCount == 0)
-                                        {
-                                            <li>
-                                                <form asp-action="Delete"
-                                                      asp-route-id="@dept.Id"
-                                                      method="post" class="d-inline">
-                                                    @Html.AntiForgeryToken()
-                                                    <button type="submit"
-                                                            class="dropdown-item text-danger"
-                                                            data-confirm="هل تريد حذف قسم '@dept.Name' نهائياً؟">
-                                                        <i class="ti ti-trash"
-                                                           style="margin-left:6px"></i> حذف
-                                                    </button>
-                                                </form>
-                                            </li>
-                                        }
-                                    </ul>
+                                <div class="il-actions-group">
+                                    <a href="/CompanyAdmin/Departments/Edit/@dept.Id" 
+                                       class="il-action-btn" data-tooltip="تعديل">
+                                        <i class="ti ti-edit"></i>
+                                    </a>
+                                    
+                                    @if (dept.EmployeeCount > 0)
+                                    {
+                                        <a href="/CompanyAdmin/Departments/Employees/@dept.Id" 
+                                           class="il-action-btn" data-tooltip="عرض الموظفين">
+                                            <i class="ti ti-users"></i>
+                                        </a>
+                                    }
+                                    
+                                    <form asp-action="ToggleActive" asp-route-id="@dept.Id" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="il-action-btn @(dept.IsActive ? "il-action-danger" : "il-action-success")" 
+                                                data-tooltip="@(dept.IsActive ? "تعطيل" : "تفعيل")"
+                                                data-confirm="@(dept.IsActive ? $"تعطيل قسم {dept.Name}؟" : $"تفعيل قسم {dept.Name}؟")">
+                                            <i class="ti ti-@(dept.IsActive ? "toggle-left" : "toggle-right")"></i>
+                                        </button>
+                                    </form>
+
+                                    @if (dept.EmployeeCount == 0)
+                                    {
+                                        <form asp-action="Delete" asp-route-id="@dept.Id" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="il-action-btn il-action-danger" 
+                                                    data-tooltip="حذف"
+                                                    data-confirm="هل تريد حذف قسم '@dept.Name' نهائياً؟">
+                                                <i class="ti ti-trash"></i>
+                                            </button>
+                                        </form>
+                                    }
                                 </div>
                             </td>
                         </tr>

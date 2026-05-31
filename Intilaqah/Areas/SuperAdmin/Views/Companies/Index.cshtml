@@ -110,40 +110,40 @@
                                 <span class="@statusClass">@statusText</span>
                             </td>
                             <td class="text-end">
-                                <div class="d-flex gap-2 justify-content-end">
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-light text-primary" data-bs-toggle="tooltip" title="تعديل">
-                                        <i class="ti ti-edit fs-5"></i>
+                                <div class="il-actions-group justify-content-end">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="il-action-btn" data-tooltip="تعديل">
+                                        <i class="ti ti-edit"></i>
                                     </a>
-                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-light text-info" data-bs-toggle="tooltip" title="التفاصيل">
-                                        <i class="ti ti-eye fs-5"></i>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="il-action-btn" data-tooltip="التفاصيل">
+                                        <i class="ti ti-eye"></i>
                                     </a>
-                                    <a href="/SuperAdmin/Users/CompanyUsers?tenantId=@item.Id" class="btn btn-sm btn-light text-secondary" data-bs-toggle="tooltip" title="المستخدمون">
-                                        <i class="ti ti-users fs-5"></i>
+                                    <a href="/SuperAdmin/Users/CompanyUsers?tenantId=@item.Id" class="il-action-btn" data-tooltip="المستخدمون">
+                                        <i class="ti ti-users"></i>
                                     </a>
                                     @if (item.Status == TenantStatus.Active)
                                     {
-                                        <form asp-action="Freeze" asp-route-id="@item.Id" method="post" class="m-0">
+                                        <form asp-action="Freeze" asp-route-id="@item.Id" method="post" class="m-0 d-inline">
                                             @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-sm btn-light text-warning" data-bs-toggle="tooltip" title="تجميد" data-confirm="هل أنت متأكد من تجميد هذه الشركة؟">
-                                                <i class="ti ti-snowflake fs-5"></i>
+                                            <button type="submit" class="il-action-btn" style="color:var(--il-warning)" data-tooltip="تجميد" data-confirm="هل أنت متأكد من تجميد هذه الشركة؟">
+                                                <i class="ti ti-snowflake"></i>
                                             </button>
                                         </form>
                                     }
                                     @if (item.Status == TenantStatus.Frozen)
                                     {
-                                        <form asp-action="Unfreeze" asp-route-id="@item.Id" method="post" class="m-0">
+                                        <form asp-action="Unfreeze" asp-route-id="@item.Id" method="post" class="m-0 d-inline">
                                             @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-sm btn-light text-success" data-bs-toggle="tooltip" title="تفعيل">
-                                                <i class="ti ti-player-play fs-5"></i>
+                                            <button type="submit" class="il-action-btn il-action-success" data-tooltip="تفعيل">
+                                                <i class="ti ti-player-play"></i>
                                             </button>
                                         </form>
                                     }
                                     @if (item.Status != TenantStatus.Suspended)
                                     {
-                                        <form asp-action="Suspend" asp-route-id="@item.Id" method="post" class="m-0">
+                                        <form asp-action="Suspend" asp-route-id="@item.Id" method="post" class="m-0 d-inline">
                                             @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-sm btn-light text-danger" data-bs-toggle="tooltip" title="إيقاف" data-confirm="هل أنت متأكد من إيقاف هذه الشركة؟">
-                                                <i class="ti ti-ban fs-5"></i>
+                                            <button type="submit" class="il-action-btn il-action-danger" data-tooltip="إيقاف" data-confirm="هل أنت متأكد من إيقاف هذه الشركة؟">
+                                                <i class="ti ti-ban"></i>
                                             </button>
                                         </form>
                                     }

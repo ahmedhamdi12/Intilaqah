@@ -57,18 +57,19 @@
                         }
                     </td>
                     <td>
-                        <div class="d-flex gap-1">
+                        <div class="il-actions-group">
                             <a href="/CompanyAdmin/Documents/Upload?entityId=@doc.EntityId&entityType=@doc.EntityType"
-                               class="btn-il btn-il-outline btn-il-sm"
-                               title="رفع نسخة جديدة">
+                               class="il-action-btn"
+                               data-tooltip="رفع نسخة جديدة">
                                 <i class="ti ti-upload"></i>
                             </a>
                             <form asp-action="Delete" asp-route-id="@doc.Id"
                                   method="post" class="d-inline">
                                 @Html.AntiForgeryToken()
                                 <button type="submit"
-                                        class="btn-il btn-il-danger btn-il-sm"
-                                        data-confirm="هل تريد حذف هذه الوثيقة؟">
+                                        class="il-action-btn il-action-danger"
+                                        data-confirm="هل تريد حذف هذه الوثيقة؟"
+                                        data-tooltip="حذف">
                                     <i class="ti ti-trash"></i>
                                 </button>
                             </form>
