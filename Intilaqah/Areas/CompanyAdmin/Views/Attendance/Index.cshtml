@@ -1,0 +1,194 @@
+@model Intilaqah.Models.ViewModels.CompanyAdmin.AttendanceDashboardVM
+@{
+    ViewData["Title"] = "الحضور والغياب";
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">الحضور والغياب</h1>
+        <div class="page-subtitle">
+            @Model.Date.ToString("dddd، d MMMM yyyy",
+                new System.Globalization.CultureInfo("ar-SA"))
+        </div>
+    </div>
+    <div class="page-actions">
+        <a href="/CompanyAdmin/Attendance/Import"
+           class="btn-il btn-il-outline">
+            <i class="ti ti-file-import"></i> استيراد من Excel
+        </a>
+    </div>
+</div>
+
+@* Date navigation *@
+<div class="il-card mb-3" style="padding:12px 16px">
+    <form method="get" class="d-flex align-items-center gap-3">
+        <label style="font-size:13px;font-weight:500">اختر التاريخ:</label>
+        <input type="date" name="date"
+               value="@Model.Date.ToString("yyyy-MM-dd")"
+               class="il-form-control" style="max-width:180px"
+               onchange="this.form.submit()" />
+        <a href="/CompanyAdmin/Attendance"
+           class="btn-il btn-il-outline btn-il-sm">اليوم</a>
+    </form>
+</div>
+
+@* KPI Cards *@
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="il-kpi">
+            <div class="kpi-top">
+                <div class="kpi-icon green">
+                    <i class="ti ti-user-check"></i>
+                </div>
+            </div>
+            <div class="kpi-value text-success-il">@Model.PresentCount</div>
+            <div class="kpi-label">حاضر</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="il-kpi">
+            <div class="kpi-top">
+                <div class="kpi-icon amber">
+                    <i class="ti ti-clock-exclamation"></i>
+                </div>
+            </div>
+            <div class="kpi-value" style="color:var(--il-warning)">
+                @Model.LateCount
+            </div>
+            <div class="kpi-label">متأخر</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="il-kpi">
+            <div class="kpi-top">
+                <div class="kpi-icon red">
+                    <i class="ti ti-user-x"></i>
+                </div>
+            </div>
+            <div class="kpi-value text-danger-il">@Model.AbsentCount</div>
+            <div class="kpi-label">غائب</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="il-kpi">
+            <div class="kpi-top">
+                <div class="kpi-icon blue">
+                    <i class="ti ti-chart-bar"></i>
+                </div>
+            </div>
+            <div class="kpi-value">@Model.AttendanceRate%</div>
+            <div class="kpi-label">نسبة الحضور</div>
+        </div>
+    </div>
+</div>
+
+@* Attendance Table *@
+<div class="il-card">
+    <div class="il-card-header">
+        <h2 class="card-title">
+            <i class="ti ti-list-check"></i> تفاصيل الحضور
+        </h2>
+        <input id="tableSearch" type="text"
+               class="il-form-control" style="max-width:220px"
+               placeholder="بحث بالاسم..." />
+    </div>
+
+    @if (!Model.Rows.Any())
+    {
+        <div class="text-center py-4" style="color:var(--il-muted);font-size:13px">
+            لا يوجد موظفون نشطون
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="il-table">
+                <thead>
+                    <tr>
+                        <th>الموظف</th>
+                        <th>الوردية</th>
+                        <th>وقت الدخول</th>
+                        <th>وقت الخروج</th>
+                        <th>التأخر</th>
+                        <th>الإضافي</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Rows)
+                    {
+                        var statusClass = row.Status switch {
+                            Intilaqah.Models.AttendanceStatus.Present => "active",
+                            Intilaqah.Models.AttendanceStatus.Late    => "warning",
+                            Intilaqah.Models.AttendanceStatus.Absent  => "danger",
+                            Intilaqah.Models.AttendanceStatus.OnLeave => "info",
+                            _ => "inactive"
+                        };
+                        var statusLabel = row.Status switch {
+                            Intilaqah.Models.AttendanceStatus.Present => "حاضر",
+                            Intilaqah.Models.AttendanceStatus.Late    => "متأخر",
+                            Intilaqah.Models.AttendanceStatus.Absent  => "غائب",
+                            Intilaqah.Models.AttendanceStatus.OnLeave => "إجازة",
+                            _ => "—"
+                        };
+                        <tr>
+                            <td>
+                                <div class="emp-cell">
+                                    <div class="emp-avatar"
+                                         style="background:#2563a8">
+                                        @row.FullNameAr.Substring(0,
+                                            Math.Min(2, row.FullNameAr.Length))
+                                    </div>
+                                    <div>
+                                        <div class="emp-name">@row.FullNameAr</div>
+                                        <div class="emp-sub">@row.EmployeeCode</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="font-size:12px">@row.ShiftName</td>
+                            <td>
+                                @(row.CheckIn.HasValue
+                                    ? row.CheckIn.Value.ToString("hh:mm tt")
+                                    : "—")
+                            </td>
+                            <td>
+                                @(row.CheckOut.HasValue
+                                    ? row.CheckOut.Value.ToString("hh:mm tt")
+                                    : "—")
+                            </td>
+                            <td>
+                                @if (row.LateMinutes > 0)
+                                {
+                                    <span class="il-badge warning">
+                                        @row.LateMinutes د
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span style="color:var(--il-muted)">—</span>
+                                }
+                            </td>
+                            <td>
+                                @if (row.OvertimeMinutes > 0)
+                                {
+                                    <span class="il-badge info">
+                                        @row.OvertimeMinutes د
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span style="color:var(--il-muted)">—</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="il-badge @statusClass">
+                                    @statusLabel
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

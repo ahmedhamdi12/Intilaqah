@@ -196,6 +196,8 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
                 .GetByEntityAsync(id, DocumentEntityType.Employee)).ToList();
             var departments = (await _uow.Departments.GetAllAsync())
                 .ToDictionary(d => d.Id, d => d.Name);
+            var shifts = (await _uow.Shifts.GetActiveAsync()).ToList();
+            var currentShiftAssignment = await _uow.ShiftAssignments.GetActiveByEmployeeAsync(id);
 
             ViewBag.Employee   = employee;
             ViewBag.Contract   = contract;
@@ -203,6 +205,8 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
             ViewBag.Department = employee.DepartmentId.HasValue
                 ? departments.GetValueOrDefault(employee.DepartmentId.Value, "—")
                 : "—";
+            ViewBag.Shifts       = shifts;
+            ViewBag.CurrentShift = currentShiftAssignment?.Shift;
 
             return View();
         }

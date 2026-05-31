@@ -11,6 +11,9 @@ namespace Intilaqah.UnitOfWork
         IPermissionRepository Permissions { get; }
         IDepartmentRepository Departments { get; }
         IContractRepository   Contracts   { get; }
+        IShiftRepository Shifts { get; }
+        IShiftAssignmentRepository ShiftAssignments { get; }
+        IAttendanceRepository Attendance { get; }
 
         Task<int> SaveChangesAsync();
     }

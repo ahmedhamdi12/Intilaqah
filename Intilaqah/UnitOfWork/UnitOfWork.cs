@@ -17,6 +17,9 @@ namespace Intilaqah.UnitOfWork
         public IPermissionRepository Permissions { get; }
         public IDepartmentRepository Departments { get; }
         public IContractRepository   Contracts   { get; }
+        public IShiftRepository Shifts { get; }
+        public IShiftAssignmentRepository ShiftAssignments { get; }
+        public IAttendanceRepository Attendance { get; }
 
         public UnitOfWork(ApplicationDbContext context, ITenantResolver tenantResolver)
         {
@@ -29,6 +32,9 @@ namespace Intilaqah.UnitOfWork
             Permissions = new PermissionRepository(context);
             Departments = new DepartmentRepository(context, tenantResolver);
             Contracts   = new ContractRepository(context, tenantResolver);
+            Shifts = new ShiftRepository(context, tenantResolver);
+            ShiftAssignments = new ShiftAssignmentRepository(context, tenantResolver);
+            Attendance = new AttendanceRepository(context, tenantResolver);
         }
 
         public async Task<int> SaveChangesAsync()

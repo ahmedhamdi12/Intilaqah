@@ -23,6 +23,9 @@ namespace Intilaqah.Data
         public DbSet<Tenant> Tenants => Set<Tenant>();
         public DbSet<Employee> Employees => Set<Employee>();
         public DbSet<Document> Documents => Set<Document>();
+        public DbSet<Shift> Shifts => Set<Shift>();
+        public DbSet<ShiftAssignment> ShiftAssignments => Set<ShiftAssignment>();
+        public DbSet<AttendanceLog> AttendanceLogs => Set<AttendanceLog>();
         public DbSet<Department> Departments => Set<Department>();
         public DbSet<Contract>   Contracts   => Set<Contract>();
         public DbSet<Permission> Permissions => Set<Permission>();
@@ -44,6 +47,15 @@ namespace Intilaqah.Data
 
             builder.Entity<Document>()
                 .HasQueryFilter(d => (TenantId == null || d.TenantId == TenantId) && !d.IsDeleted);
+
+            builder.Entity<Shift>()
+                .HasQueryFilter(s => (TenantId == null || s.TenantId == TenantId) && !s.IsDeleted);
+
+            builder.Entity<ShiftAssignment>()
+                .HasQueryFilter(sa => (TenantId == null || sa.TenantId == TenantId) && !sa.IsDeleted);
+
+            builder.Entity<AttendanceLog>()
+                .HasQueryFilter(al => (TenantId == null || al.TenantId == TenantId) && !al.IsDeleted);
 
             builder.Entity<Department>()
                 .HasQueryFilter(d => (TenantId == null || d.TenantId == TenantId) && !d.IsDeleted);

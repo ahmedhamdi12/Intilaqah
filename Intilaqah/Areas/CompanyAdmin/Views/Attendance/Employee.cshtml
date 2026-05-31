@@ -1,0 +1,134 @@
+@model IEnumerable<Intilaqah.Models.AttendanceLog>
+@{
+    var emp = ViewBag.Employee as Intilaqah.Models.Employee;
+    ViewData["Title"] = $"سجل حضور {emp?.FullNameAr}";
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">سجل الحضور</h1>
+        <div class="page-subtitle">@emp?.FullNameAr - @emp?.EmployeeCode</div>
+    </div>
+    <div class="page-actions">
+        <a href="/CompanyAdmin/Employees/Details/@emp?.Id" class="btn-il btn-il-outline">
+            <i class="ti ti-arrow-right"></i> رجوع لملف الموظف
+        </a>
+    </div>
+</div>
+
+@* Filter Form *@
+<div class="il-card mb-4" style="padding: 16px;">
+    <form method="get" class="d-flex align-items-end gap-3 flex-wrap">
+        <div>
+            <label class="il-form-label">من تاريخ</label>
+            <input type="date" name="from" value="@(((DateTime)ViewBag.FromDate).ToString("yyyy-MM-dd"))" class="il-form-control" style="width: 150px;" />
+        </div>
+        <div>
+            <label class="il-form-label">إلى تاريخ</label>
+            <input type="date" name="to" value="@(((DateTime)ViewBag.ToDate).ToString("yyyy-MM-dd"))" class="il-form-control" style="width: 150px;" />
+        </div>
+        <button type="submit" class="btn-il btn-il-primary">
+            <i class="ti ti-filter"></i> تصفية
+        </button>
+    </form>
+</div>
+
+@* Stats *@
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="il-kpi">
+            <div class="kpi-top">
+                <div class="kpi-icon warning"><i class="ti ti-clock-exclamation"></i></div>
+            </div>
+            <div class="kpi-value text-warning">@ViewBag.TotalLate</div>
+            <div class="kpi-label">إجمالي دقائق التأخير</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="il-kpi">
+            <div class="kpi-top">
+                <div class="kpi-icon info"><i class="ti ti-clock-plus"></i></div>
+            </div>
+            <div class="kpi-value text-info">@ViewBag.TotalOvertime</div>
+            <div class="kpi-label">إجمالي دقائق الإضافي</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="il-kpi">
+            <div class="kpi-top">
+                <div class="kpi-icon danger"><i class="ti ti-user-x"></i></div>
+            </div>
+            <div class="kpi-value text-danger">@ViewBag.AbsentDays</div>
+            <div class="kpi-label">أيام الغياب</div>
+        </div>
+    </div>
+</div>
+
+<div class="il-card">
+    <div class="il-card-header">
+        <h2 class="card-title"><i class="ti ti-history"></i> السجل اليومي</h2>
+    </div>
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="ti ti-calendar-off" style="font-size: 3rem; opacity: 0.3;"></i>
+            <div class="mt-2">لا توجد سجلات حضور في هذه الفترة</div>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="il-table">
+                <thead>
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>وقت الدخول</th>
+                        <th>وقت الخروج</th>
+                        <th>دقائق التأخير</th>
+                        <th>دقائق الإضافي</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(var item in Model)
+                    {
+                        var statusClass = item.Status switch {
+                            Intilaqah.Models.AttendanceStatus.Present => "active",
+                            Intilaqah.Models.AttendanceStatus.Late    => "warning",
+                            Intilaqah.Models.AttendanceStatus.Absent  => "danger",
+                            Intilaqah.Models.AttendanceStatus.OnLeave => "info",
+                            _ => "inactive"
+                        };
+                        var statusLabel = item.Status switch {
+                            Intilaqah.Models.AttendanceStatus.Present => "حاضر",
+                            Intilaqah.Models.AttendanceStatus.Late    => "متأخر",
+                            Intilaqah.Models.AttendanceStatus.Absent  => "غائب",
+                            Intilaqah.Models.AttendanceStatus.OnLeave => "إجازة",
+                            _ => "—"
+                        };
+                        <tr>
+                            <td><strong>@item.Date.ToString("yyyy/MM/dd")</strong></td>
+                            <td>@(item.CheckIn?.ToString("hh:mm tt") ?? "—")</td>
+                            <td>@(item.CheckOut?.ToString("hh:mm tt") ?? "—")</td>
+                            <td>
+                                @if (item.LateMinutes > 0)
+                                {
+                                    <span class="il-badge warning">@item.LateMinutes د</span>
+                                }
+                                else { <span class="text-muted">—</span> }
+                            </td>
+                            <td>
+                                @if (item.OvertimeMinutes > 0)
+                                {
+                                    <span class="il-badge info">@item.OvertimeMinutes د</span>
+                                }
+                                else { <span class="text-muted">—</span> }
+                            </td>
+                            <td><span class="il-badge @statusClass">@statusLabel</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

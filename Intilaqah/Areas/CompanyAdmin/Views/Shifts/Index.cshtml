@@ -1,0 +1,95 @@
+@model IEnumerable<Intilaqah.Models.Shift>
+@{
+    ViewData["Title"] = "الورديات";
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">الورديات</h1>
+        <div class="page-subtitle">تعريف ورديات العمل</div>
+    </div>
+    <div class="page-actions">
+        <a href="/CompanyAdmin/Shifts/Create" class="btn-il btn-il-primary">
+            <i class="ti ti-clock-plus"></i> إضافة وردية
+        </a>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="il-card text-center py-5" style="color:var(--il-muted)">
+        <i class="ti ti-clock" style="font-size:48px;opacity:.25"></i>
+        <div class="mt-3" style="font-size:14px">
+            لا توجد ورديات. أضف وردية لتبدأ تسجيل الحضور.
+        </div>
+        <a href="/CompanyAdmin/Shifts/Create"
+           class="btn-il btn-il-primary mt-3 d-inline-flex">
+            <i class="ti ti-clock-plus"></i> إضافة وردية
+        </a>
+    </div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var shift in Model)
+        {
+            <div class="col-md-4">
+                <div class="il-card">
+                    <div style="display:flex;justify-content:space-between;
+                                align-items:flex-start;margin-bottom:12px">
+                        <div>
+                            <div style="font-size:15px;font-weight:700">
+                                @shift.Name
+                            </div>
+                            <div style="font-size:12px;color:var(--il-muted)">
+                                @(shift.ShiftType switch {
+                                    Intilaqah.Models.ShiftType.Fixed    => "ثابتة",
+                                    Intilaqah.Models.ShiftType.Variable => "متغيرة",
+                                    Intilaqah.Models.ShiftType.Night    => "ليلية",
+                                    Intilaqah.Models.ShiftType.Seasonal => "موسمية",
+                                    _ => shift.ShiftType.ToString()
+                                })
+                            </div>
+                        </div>
+                        <span class="il-badge @(shift.IsActive ? "active" : "inactive")">
+                            @(shift.IsActive ? "نشطة" : "معطّلة")
+                        </span>
+                    </div>
+                    <div style="display:flex;gap:16px;margin-bottom:12px">
+                        <div>
+                            <div style="font-size:11px;color:var(--il-muted)">
+                                البداية
+                            </div>
+                            <div style="font-size:18px;font-weight:700;
+                                        color:var(--il-primary)">
+                                @shift.StartTime.ToString("hh:mm tt")
+                            </div>
+                        </div>
+                        <div style="padding-top:16px;color:var(--il-muted)">→</div>
+                        <div>
+                            <div style="font-size:11px;color:var(--il-muted)">
+                                النهاية
+                            </div>
+                            <div style="font-size:18px;font-weight:700;
+                                        color:var(--il-primary)">
+                                @shift.EndTime.ToString("hh:mm tt")
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-size:11px;color:var(--il-muted)">
+                                السماح
+                            </div>
+                            <div style="font-size:13px;font-weight:600">
+                                @shift.GraceMinutes د
+                            </div>
+                        </div>
+                    </div>
+                    <a href="/CompanyAdmin/Shifts/Edit/@shift.Id"
+                       class="btn-il btn-il-outline btn-il-sm d-inline-flex">
+                        <i class="ti ti-edit"></i> تعديل
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+}
