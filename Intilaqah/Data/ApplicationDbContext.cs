@@ -10,6 +10,9 @@ namespace Intilaqah.Data
     {
         private readonly ITenantResolver _tenantResolver;
 
+        // EF Core reads this property at query time to parameterize the filter
+        private Guid? TenantId => _tenantResolver.GetTenantId();
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options,
             ITenantResolver tenantResolver) : base(options)
         {
@@ -35,22 +38,18 @@ namespace Intilaqah.Data
                 .HasKey(rp => new { rp.RoleId, rp.PermissionId });
 
             // Global query filters — tenant isolation + soft delete
-            var tenantId = _tenantResolver.GetTenantId();
+            // Reference TenantId property (not method call) so EF Core can parameterize it
+            builder.Entity<Employee>()
+                .HasQueryFilter(e => (TenantId == null || e.TenantId == TenantId) && !e.IsDeleted);
 
-            if (tenantId.HasValue)
-            {
-                builder.Entity<Employee>()
-                    .HasQueryFilter(e => e.TenantId == tenantId.Value && !e.IsDeleted);
+            builder.Entity<Document>()
+                .HasQueryFilter(d => (TenantId == null || d.TenantId == TenantId) && !d.IsDeleted);
 
-                builder.Entity<Document>()
-                    .HasQueryFilter(d => d.TenantId == tenantId.Value && !d.IsDeleted);
+            builder.Entity<Department>()
+                .HasQueryFilter(d => (TenantId == null || d.TenantId == TenantId) && !d.IsDeleted);
 
-                builder.Entity<Department>()
-                    .HasQueryFilter(d => d.TenantId == tenantId.Value && !d.IsDeleted);
-
-                builder.Entity<Contract>()
-                    .HasQueryFilter(c => c.TenantId == tenantId.Value && !c.IsDeleted);
-            }
+            builder.Entity<Contract>()
+                .HasQueryFilter(c => (TenantId == null || c.TenantId == TenantId) && !c.IsDeleted);
 
             builder.Entity<Tenant>()
                 .HasQueryFilter(t => !t.IsDeleted);

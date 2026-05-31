@@ -20,11 +20,15 @@ namespace Intilaqah.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public IActionResult Login(string? returnUrl)
+        public async Task<IActionResult> Login(string? returnUrl)
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                return RedirectToDashboard();
+                var user = await _userManager.GetUserAsync(User);
+                if (user != null)
+                {
+                    return await RedirectToDashboard(user);
+                }
             }
 
             return View(new LoginViewModel { ReturnUrl = returnUrl });
@@ -61,7 +65,7 @@ namespace Intilaqah.Controllers
                 {
                     return LocalRedirect(model.ReturnUrl);
                 }
-                return RedirectToDashboard();
+                return await RedirectToDashboard(user);
             }
             if (result.IsLockedOut)
             {
@@ -89,17 +93,19 @@ namespace Intilaqah.Controllers
             return View();
         }
 
-        private IActionResult RedirectToDashboard()
+        private async Task<IActionResult> RedirectToDashboard(ApplicationUser user)
         {
-            if (User.IsInRole(DbSeeder.RoleSuperAdmin))
+            var roles = await _userManager.GetRolesAsync(user);
+
+            if (roles.Contains(DbSeeder.RoleSuperAdmin))
             {
                 return RedirectToAction("Index", "Dashboard", new { Area = "SuperAdmin" });
             }
-            if (User.IsInRole(DbSeeder.RoleCompanyAdmin))
+            if (roles.Contains(DbSeeder.RoleCompanyAdmin))
             {
                 return RedirectToAction("Index", "Dashboard", new { Area = "CompanyAdmin" });
             }
-            if (User.IsInRole(DbSeeder.RoleEmployee))
+            if (roles.Contains(DbSeeder.RoleEmployee))
             {
                 return RedirectToAction("Index", "Dashboard", new { Area = "Employee" });
             }

@@ -28,6 +28,9 @@ namespace Intilaqah.Infrastructure.Security
             var roles = await UserManager.GetRolesAsync(user);
             foreach (var roleName in roles)
             {
+                // Explicitly add standard Role claim to ensure [Authorize] works
+                identity.AddClaim(new Claim(Options.ClaimsIdentity.RoleClaimType, roleName));
+                
                 var role = await RoleManager.FindByNameAsync(roleName);
                 if (role != null)
                 {
