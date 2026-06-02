@@ -47,11 +47,28 @@ builder.Services.AddScoped<IContractRepository, ContractRepository>();
 builder.Services.AddScoped<IShiftRepository, ShiftRepository>();
 builder.Services.AddScoped<IShiftAssignmentRepository, ShiftAssignmentRepository>();
 builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
+builder.Services.AddScoped<IEmployeeBankAccountRepository, EmployeeBankAccountRepository>();
+builder.Services.AddScoped<IViolationRuleRepository, ViolationRuleRepository>();
+builder.Services.AddScoped<IViolationRecordRepository, ViolationRecordRepository>();
+builder.Services.AddScoped<ISalaryAdvanceRepository, SalaryAdvanceRepository>();
+builder.Services.AddScoped<ISalaryAdvanceTransactionRepository, SalaryAdvanceTransactionRepository>();
+builder.Services.AddScoped<IPayrollRepository, PayrollRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 
-// Register Custom Claims Factory (Removed, using AddClaimsPrincipalFactory instead)
+// Payroll Rules & Engine
+builder.Services.AddScoped<Intilaqah.Services.Payroll.IPayrollRule, Intilaqah.Services.Payroll.Rules.LateDeductionRule>();
+builder.Services.AddScoped<Intilaqah.Services.Payroll.IPayrollRule, Intilaqah.Services.Payroll.Rules.AbsenceDeductionRule>();
+builder.Services.AddScoped<Intilaqah.Services.Payroll.IPayrollRule, Intilaqah.Services.Payroll.Rules.OvertimeRule>();
+builder.Services.AddScoped<Intilaqah.Services.Payroll.IPayrollRule, Intilaqah.Services.Payroll.Rules.ViolationDeductionRule>();
+builder.Services.AddScoped<Intilaqah.Services.Payroll.IPayrollRule, Intilaqah.Services.Payroll.Rules.AdvanceDeductionRule>();
+builder.Services.AddScoped<Intilaqah.Services.Payroll.IPayrollEngine, Intilaqah.Services.Payroll.PayrollEngine>();
+
+// Payroll Services
+builder.Services.AddScoped<Intilaqah.Services.Payroll.IPayrollService, Intilaqah.Services.Payroll.PayrollService>();
+builder.Services.AddScoped<Intilaqah.Services.Payroll.IWpsExportService, Intilaqah.Services.Payroll.WpsExportService>();
+builder.Services.AddScoped<Intilaqah.Services.Payroll.IPayrollReportExportService, Intilaqah.Services.Payroll.PayrollReportExportService>();
 
 // Register Supabase Client
 builder.Services.AddScoped<Supabase.Client>(provider =>

@@ -31,6 +31,13 @@ namespace Intilaqah.Data
         public DbSet<Permission> Permissions => Set<Permission>();
         public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
 
+        public DbSet<EmployeeBankAccount> EmployeeBankAccounts => Set<EmployeeBankAccount>();
+        public DbSet<ViolationRule>   ViolationRules   => Set<ViolationRule>();
+        public DbSet<ViolationRecord> ViolationRecords => Set<ViolationRecord>();
+        public DbSet<SalaryAdvance>   SalaryAdvances   => Set<SalaryAdvance>();
+        public DbSet<SalaryAdvanceTransaction> SalaryAdvanceTransactions => Set<SalaryAdvanceTransaction>();
+        public DbSet<PayrollRun>      PayrollRuns      => Set<PayrollRun>();
+        public DbSet<PaySlip>         PaySlips         => Set<PaySlip>();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -68,6 +75,27 @@ namespace Intilaqah.Data
 
             builder.Entity<Plan>()
                 .HasQueryFilter(p => !p.IsDeleted);
+
+            builder.Entity<EmployeeBankAccount>()
+                .HasQueryFilter(e => (TenantId == null || e.TenantId == TenantId) && !e.IsDeleted);
+
+            builder.Entity<ViolationRule>()
+                .HasQueryFilter(v => (TenantId == null || v.TenantId == TenantId) && !v.IsDeleted);
+
+            builder.Entity<ViolationRecord>()
+                .HasQueryFilter(vr => (TenantId == null || vr.TenantId == TenantId) && !vr.IsDeleted);
+
+            builder.Entity<SalaryAdvance>()
+                .HasQueryFilter(sa => (TenantId == null || sa.TenantId == TenantId) && !sa.IsDeleted);
+
+            builder.Entity<SalaryAdvanceTransaction>()
+                .HasQueryFilter(sat => (TenantId == null || sat.TenantId == TenantId) && !sat.IsDeleted);
+
+            builder.Entity<PayrollRun>()
+                .HasQueryFilter(pr => (TenantId == null || pr.TenantId == TenantId) && !pr.IsDeleted);
+
+            builder.Entity<PaySlip>()
+                .HasQueryFilter(ps => (TenantId == null || ps.TenantId == TenantId) && !ps.IsDeleted);
         }
 
         // Audit hook — auto-fill CreatedBy / UpdatedBy / DeletedBy

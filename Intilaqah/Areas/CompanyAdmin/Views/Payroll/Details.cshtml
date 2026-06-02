@@ -1,0 +1,105 @@
+@model Intilaqah.Models.PayrollRun
+@{
+    ViewData["Title"] = $"مسير رواتب {ViewBag.MonthName} {Model.Year}";
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">مسير رواتب @ViewBag.MonthName @Model.Year</h1>
+        <div class="page-subtitle">
+            الحالة: 
+            @if (Model.Status == Intilaqah.Models.PayrollStatus.Draft)
+            {
+                <span class="badge bg-warning text-dark">مسودة - بانتظار الاعتماد</span>
+            }
+            else if (Model.Status == Intilaqah.Models.PayrollStatus.Approved)
+            {
+                <span class="badge bg-success">تم الاعتماد</span>
+            }
+            else if (Model.Status == Intilaqah.Models.PayrollStatus.Exported)
+            {
+                <span class="badge bg-info">مصدر WPS</span>
+            }
+        </div>
+    </div>
+    <div class="page-actions gap-2 d-flex">
+        <a href="/CompanyAdmin/Payroll/Payslip/@Model.Id" class="btn-il btn-il-light">
+            <i class="ti ti-file-invoice"></i> مسيرات الموظفين
+        </a>
+
+        @if (Model.Status == Intilaqah.Models.PayrollStatus.Draft)
+        {
+            <form method="post" action="/CompanyAdmin/Payroll/Approve/@Model.Id" onsubmit="return confirm('هل أنت متأكد من اعتماد المسير؟ لن تتمكن من التعديل بعد الاعتماد وسيتم خصم السلف وتطبيق المخالفات فعلياً.');">
+                <button type="submit" class="btn-il btn-il-success">
+                    <i class="ti ti-check"></i> اعتماد المسير
+                </button>
+            </form>
+        }
+        else
+        {
+            <a href="/CompanyAdmin/Payroll/ExportInternalReport/@Model.Id" class="btn-il btn-il-light">
+                <i class="ti ti-download"></i> تقرير داخلي
+            </a>
+            <a href="/CompanyAdmin/Payroll/ExportWps/@Model.Id" class="btn-il btn-il-primary">
+                <i class="ti ti-file-spreadsheet"></i> تصدير ملف حماية الأجور WPS
+            </a>
+        }
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="il-card text-center">
+            <h3 class="text-muted" style="font-size:14px">إجمالي الرواتب والبدلات</h3>
+            <div class="text-success fw-bold mt-2" style="font-size:24px">@Model.TotalGross.ToString("N2") ﷼</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="il-card text-center">
+            <h3 class="text-muted" style="font-size:14px">إجمالي الاستقطاعات</h3>
+            <div class="text-danger fw-bold mt-2" style="font-size:24px">@Model.TotalDeductions.ToString("N2") ﷼</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="il-card text-center">
+            <h3 class="text-muted" style="font-size:14px">صافي الرواتب المستحقة</h3>
+            <div class="text-primary fw-bold mt-2" style="font-size:24px">@Model.TotalNet.ToString("N2") ﷼</div>
+        </div>
+    </div>
+</div>
+
+<div class="il-card">
+    <h3 class="mb-3">ملخص الرواتب للموظفين</h3>
+    <div class="table-responsive">
+        <table class="il-table">
+            <thead>
+                <tr>
+                    <th>الموظف</th>
+                    <th>الأساسي + البدلات</th>
+                    <th>الإضافي</th>
+                    <th class="text-danger">الغياب والتأخر</th>
+                    <th class="text-danger">المخالفات</th>
+                    <th class="text-danger">السلف</th>
+                    <th>الصافي</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(var slip in Model.PaySlips.OrderBy(p => p.EmployeeCode))
+                {
+                    <tr>
+                        <td>
+                            <div class="fw-bold">@slip.EmployeeNameAr</div>
+                            <div class="text-muted" style="font-size:12px">@slip.EmployeeCode</div>
+                        </td>
+                        <td>@((slip.BasicSalary + slip.HousingAllowance + slip.TransportAllowance + slip.OtherAllowances).ToString("N2"))</td>
+                        <td class="text-success">+@slip.OvertimeAmount.ToString("N2")</td>
+                        <td class="text-danger">-@((slip.AbsenceDeduction + slip.LateDeduction).ToString("N2"))</td>
+                        <td class="text-danger">-@slip.ViolationDeduction.ToString("N2")</td>
+                        <td class="text-danger">-@slip.AdvanceDeduction.ToString("N2")</td>
+                        <td class="fw-bold">@slip.NetSalary.ToString("N2") ﷼</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,60 @@
+@model Intilaqah.Models.ViewModels.CompanyAdmin.ViolationCreateVM
+@{
+    ViewData["Title"] = "تسجيل مخالفة جديدة";
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">تسجيل مخالفة</h1>
+        <div class="page-subtitle">سيتم خصم قيمة المخالفة تلقائياً في مسير الرواتب القادم للموظف</div>
+    </div>
+    <div class="page-actions">
+        <a href="/CompanyAdmin/Violations" class="btn-il btn-il-light">إلغاء</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="il-card">
+            <form method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="EmployeeId" class="form-label"></label>
+                    <select asp-for="EmployeeId" class="form-select" asp-items="Model.Employees">
+                        <option value="">-- اختر الموظف --</option>
+                    </select>
+                    <span asp-validation-for="EmployeeId" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ViolationRuleId" class="form-label"></label>
+                    <select asp-for="ViolationRuleId" class="form-select" asp-items="Model.Rules">
+                        <option value="">-- اختر نوع المخالفة --</option>
+                    </select>
+                    <span asp-validation-for="ViolationRuleId" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ViolationDate" class="form-label"></label>
+                    <input asp-for="ViolationDate" class="form-control" />
+                    <span asp-validation-for="ViolationDate" class="text-danger"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Notes" class="form-label"></label>
+                    <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Notes" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn-il btn-il-primary w-100">
+                    <i class="ti ti-check"></i> حفظ واعتماد المخالفة
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

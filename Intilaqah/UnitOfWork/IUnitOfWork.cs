@@ -14,6 +14,12 @@ namespace Intilaqah.UnitOfWork
         IShiftRepository Shifts { get; }
         IShiftAssignmentRepository ShiftAssignments { get; }
         IAttendanceRepository Attendance { get; }
+        IEmployeeBankAccountRepository EmployeeBankAccounts { get; }
+        IViolationRuleRepository   ViolationRules   { get; }
+        IViolationRecordRepository ViolationRecords { get; }
+        ISalaryAdvanceRepository   SalaryAdvances   { get; }
+        ISalaryAdvanceTransactionRepository SalaryAdvanceTransactions { get; }
+        IPayrollRepository         Payroll          { get; }
 
         Task<int> SaveChangesAsync();
     }

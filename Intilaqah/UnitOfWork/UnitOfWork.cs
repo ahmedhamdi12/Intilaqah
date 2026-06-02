@@ -20,6 +20,12 @@ namespace Intilaqah.UnitOfWork
         public IShiftRepository Shifts { get; }
         public IShiftAssignmentRepository ShiftAssignments { get; }
         public IAttendanceRepository Attendance { get; }
+        public IEmployeeBankAccountRepository EmployeeBankAccounts { get; }
+        public IViolationRuleRepository   ViolationRules   { get; }
+        public IViolationRecordRepository ViolationRecords { get; }
+        public ISalaryAdvanceRepository   SalaryAdvances   { get; }
+        public ISalaryAdvanceTransactionRepository SalaryAdvanceTransactions { get; }
+        public IPayrollRepository         Payroll          { get; }
 
         public UnitOfWork(ApplicationDbContext context, ITenantResolver tenantResolver)
         {
@@ -35,6 +41,12 @@ namespace Intilaqah.UnitOfWork
             Shifts = new ShiftRepository(context, tenantResolver);
             ShiftAssignments = new ShiftAssignmentRepository(context, tenantResolver);
             Attendance = new AttendanceRepository(context, tenantResolver);
+            EmployeeBankAccounts = new EmployeeBankAccountRepository(context, tenantResolver);
+            ViolationRules   = new ViolationRuleRepository(context, tenantResolver);
+            ViolationRecords = new ViolationRecordRepository(context, tenantResolver);
+            SalaryAdvances   = new SalaryAdvanceRepository(context, tenantResolver);
+            SalaryAdvanceTransactions = new SalaryAdvanceTransactionRepository(context, tenantResolver);
+            Payroll          = new PayrollRepository(context, tenantResolver);
         }
 
         public async Task<int> SaveChangesAsync()

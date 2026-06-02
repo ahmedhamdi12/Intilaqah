@@ -118,6 +118,9 @@ namespace Intilaqah.Data
                 context.Set<Plan>().AddRange(plans);
                 await context.SaveChangesAsync();
             }
+
+            // Seed 36 Standard Saudi Labor Law Violation Rules
+            await ViolationRuleSeeder.SeedAsync(context);
         }
 
         private static async Task EnsureRoleAsync(RoleManager<AppRole> roleManager, string roleName, string description)
