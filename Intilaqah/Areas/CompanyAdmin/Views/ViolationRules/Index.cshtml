@@ -1,0 +1,96 @@
+@model IEnumerable<Intilaqah.Models.ViolationRule>
+@{
+    ViewData["Title"] = "لائحة المخالفات والجزاءات";
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">لائحة المخالفات والجزاءات</h1>
+        <div class="page-subtitle">إدارة القواعد والجزاءات الخاصة بمنشأتك (بالإضافة لقواعد وزارة الموارد البشرية)</div>
+    </div>
+    <div class="page-actions">
+        <a href="/CompanyAdmin/ViolationRules/Create" class="btn-il btn-il-primary">
+            <i class="ti ti-plus"></i> إضافة قاعدة جديدة
+        </a>
+    </div>
+</div>
+
+<div class="il-card">
+    <div class="table-responsive">
+        <table class="il-table">
+            <thead>
+                <tr>
+                    <th>رقم</th>
+                    <th>المخالفة</th>
+                    <th>الدرجة</th>
+                    <th>الخصم (يوم)</th>
+                    <th>النوع</th>
+                    <th>الحالة</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var rule in Model)
+                {
+                    var isGlobal = rule.TenantId == Guid.Empty;
+                    <tr>
+                        <td>@rule.RuleNumber</td>
+                        <td>
+                            <div class="fw-bold">@rule.Title</div>
+                            <div class="text-muted" style="font-size:12px">@rule.Description</div>
+                        </td>
+                        <td>
+                            @switch (rule.Severity)
+                            {
+                                case Intilaqah.Models.ViolationSeverity.Minor: <span class="badge bg-light text-dark">بسيطة</span> break;
+                                case Intilaqah.Models.ViolationSeverity.Moderate: <span class="badge bg-warning text-dark">متوسطة</span> break;
+                                case Intilaqah.Models.ViolationSeverity.Serious: <span class="badge bg-danger">جسيمة</span> break;
+                                case Intilaqah.Models.ViolationSeverity.Severe: <span class="badge bg-dark">شديدة</span> break;
+                            }
+                        </td>
+                        <td class="text-danger fw-bold">@rule.DeductionAmount.ToString("N2")</td>
+                        <td>
+                            @if (isGlobal)
+                            {
+                                <span class="badge bg-secondary" title="قاعدة عامة في نظام العمل"><i class="ti ti-world"></i> نظام العمل</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-primary" title="مخصصة لشركتك"><i class="ti ti-building"></i> مخصصة</span>
+                            }
+                        </td>
+                        <td>
+                            @if (rule.IsActive)
+                            {
+                                <span class="badge bg-success">نشطة</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">معطلة</span>
+                            }
+                        </td>
+                        <td>
+                            @if (!isGlobal)
+                            {
+                                <a href="/CompanyAdmin/ViolationRules/Edit/@rule.Id" class="btn-il btn-il-light btn-sm">
+                                    <i class="ti ti-edit"></i>
+                                </a>
+                                <form method="post" action="/CompanyAdmin/ViolationRules/Delete/@rule.Id" class="d-inline" onsubmit="return confirm('هل أنت متأكد من حذف هذه القاعدة؟');">
+                                    <button type="submit" class="btn-il btn-il-danger btn-sm">
+                                        <i class="ti ti-trash"></i>
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <button class="btn-il btn-il-light btn-sm" disabled title="لا يمكن تعديل قواعد النظام العامة">
+                                    <i class="ti ti-lock"></i>
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -80,7 +80,7 @@ namespace Intilaqah.Data
                 .HasQueryFilter(e => (TenantId == null || e.TenantId == TenantId) && !e.IsDeleted);
 
             builder.Entity<ViolationRule>()
-                .HasQueryFilter(v => (TenantId == null || v.TenantId == TenantId) && !v.IsDeleted);
+                .HasQueryFilter(v => (TenantId == null || v.TenantId == TenantId || v.TenantId == Guid.Empty) && !v.IsDeleted);
 
             builder.Entity<ViolationRecord>()
                 .HasQueryFilter(vr => (TenantId == null || vr.TenantId == TenantId) && !vr.IsDeleted);

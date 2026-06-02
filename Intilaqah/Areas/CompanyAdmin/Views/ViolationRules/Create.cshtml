@@ -1,0 +1,78 @@
+@model Intilaqah.Models.ViewModels.CompanyAdmin.ViolationRuleVM
+@{
+    ViewData["Title"] = "إضافة قاعدة مخالفة جديدة";
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">إضافة قاعدة جديدة</h1>
+        <div class="page-subtitle">إنشاء مخالفة مخصصة خاصة بمنشأتك</div>
+    </div>
+    <div class="page-actions">
+        <a href="/CompanyAdmin/ViolationRules" class="btn-il btn-il-light">إلغاء</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="il-card">
+            <form method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label asp-for="RuleNumber" class="form-label"></label>
+                        <input asp-for="RuleNumber" class="form-control" type="number" />
+                        <span asp-validation-for="RuleNumber" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-9">
+                        <label asp-for="Title" class="form-label"></label>
+                        <input asp-for="Title" class="form-control" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label"></label>
+                    <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="Severity" class="form-label"></label>
+                        <select asp-for="Severity" class="form-select">
+                            <option value="Minor">بسيطة</option>
+                            <option value="Moderate">متوسطة</option>
+                            <option value="Serious">جسيمة</option>
+                            <option value="Severe">شديدة</option>
+                        </select>
+                        <span asp-validation-for="Severity" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="DeductionAmount" class="form-label"></label>
+                        <div class="input-group">
+                            <input asp-for="DeductionAmount" class="form-control" type="number" step="0.01" />
+                            <span class="input-group-text">أيام</span>
+                        </div>
+                        <div class="form-text">كمثال: 0.25 تعني خصم ربع يوم</div>
+                        <span asp-validation-for="DeductionAmount" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-4 form-check form-switch">
+                    <input asp-for="IsActive" class="form-check-input" type="checkbox" role="switch" />
+                    <label asp-for="IsActive" class="form-check-label"></label>
+                </div>
+
+                <button type="submit" class="btn-il btn-il-primary w-100">
+                    <i class="ti ti-check"></i> حفظ القاعدة
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
