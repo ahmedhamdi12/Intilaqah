@@ -1,17 +1,20 @@
 using Intilaqah.Models;
+using Intilaqah.Services;
 using Intilaqah.UnitOfWork;
 
 namespace Intilaqah.Services.Payroll
 {
     public class PayrollService : IPayrollService
     {
-        private readonly IUnitOfWork    _uow;
-        private readonly IPayrollEngine _engine;
+        private readonly IUnitOfWork     _uow;
+        private readonly IPayrollEngine  _engine;
+        private readonly ITenantResolver _tenantResolver;
 
-        public PayrollService(IUnitOfWork uow, IPayrollEngine engine)
+        public PayrollService(IUnitOfWork uow, IPayrollEngine engine, ITenantResolver tenantResolver)
         {
-            _uow    = uow;
-            _engine = engine;
+            _uow            = uow;
+            _engine          = engine;
+            _tenantResolver  = tenantResolver;
         }
 
         public async Task<PayrollRun> CreateRunAsync(int month, int year, int workingDays, string createdBy)
@@ -49,6 +52,7 @@ namespace Intilaqah.Services.Payroll
                 .GroupBy(v => v.EmployeeId)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
+            var tenantId = _tenantResolver.GetTenantId() ?? Guid.Empty;
             var paySlips = new List<PaySlip>();
 
             foreach (var emp in employees)
@@ -76,6 +80,7 @@ namespace Intilaqah.Services.Payroll
 
                 paySlips.Add(new PaySlip
                 {
+                    TenantId           = tenantId,
                     EmployeeId         = emp.Id,
                     EmployeeNameAr     = emp.FullNameAr,
                     EmployeeNameEn     = emp.FullNameEn,
@@ -104,6 +109,7 @@ namespace Intilaqah.Services.Payroll
 
             var run = new PayrollRun
             {
+                TenantId     = tenantId,
                 Month        = month,
                 Year         = year,
                 WorkingDays  = workingDays,
@@ -115,35 +121,33 @@ namespace Intilaqah.Services.Payroll
                 CreatedBy    = createdBy,
             };
 
+            // BaseEntity.Id is auto-generated via Guid.NewGuid() in the constructor,
+            // so run.Id is already set before SaveChanges.
             await _uow.Payroll.AddAsync(run);
             await _uow.SaveChangesAsync();
-
-            // Now that we have the PayrollRunId (from SaveChanges, or if we generate sequential GUIDs we can set it earlier.
-            // Since BaseEntity usually uses DB generated GUIDs or NewGuid(), let's make sure Id is set:
-            if (run.Id == Guid.Empty) 
-                run.Id = Guid.NewGuid();
 
             // Link violations and create advance transactions
             foreach (var emp in employees)
             {
-                if (violations.TryGetValue(emp.Id, out var empViolations))
+                if (violations.TryGetValue(emp.Id, out var empViolations2))
                 {
-                    foreach (var v in empViolations)
+                    foreach (var v in empViolations2)
                     {
                         v.PayrollRunId = run.Id;
                         _uow.ViolationRecords.Update(v);
                     }
                 }
 
-                if (advances.TryGetValue(emp.Id, out var empAdvances))
+                if (advances.TryGetValue(emp.Id, out var empAdvances2))
                 {
-                    foreach (var adv in empAdvances)
+                    foreach (var adv in empAdvances2)
                     {
                         var deductedAmount = Math.Min(adv.MonthlyDeduction, adv.RemainingAmount);
                         if (deductedAmount > 0)
                         {
                             var tx = new SalaryAdvanceTransaction
                             {
+                                TenantId        = tenantId,
                                 SalaryAdvanceId = adv.Id,
                                 PayrollRunId    = run.Id,
                                 Amount          = deductedAmount,

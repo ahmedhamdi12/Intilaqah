@@ -29,7 +29,7 @@
 
         @if (Model.Status == Intilaqah.Models.PayrollStatus.Draft)
         {
-            <form method="post" action="/CompanyAdmin/Payroll/Approve/@Model.Id" onsubmit="return confirm('هل أنت متأكد من اعتماد المسير؟ لن تتمكن من التعديل بعد الاعتماد وسيتم خصم السلف وتطبيق المخالفات فعلياً.');">
+            <form method="post" asp-area="CompanyAdmin" asp-controller="Payroll" asp-action="Approve" asp-route-id="@Model.Id" onsubmit="return confirm('هل أنت متأكد من اعتماد المسير؟ لن تتمكن من التعديل بعد الاعتماد وسيتم خصم السلف وتطبيق المخالفات فعلياً.');">
                 <button type="submit" class="btn-il btn-il-success">
                     <i class="ti ti-check"></i> اعتماد المسير
                 </button>

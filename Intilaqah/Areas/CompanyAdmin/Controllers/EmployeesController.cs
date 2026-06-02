@@ -119,6 +119,21 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
             await _uow.Contracts.AddAsync(contract);
             await _uow.SaveChangesAsync();
 
+            // Create bank account if provided
+            if (!string.IsNullOrWhiteSpace(model.Iban))
+            {
+                var bank = new EmployeeBankAccount
+                {
+                    EmployeeId = employee.Id,
+                    BankName   = model.BankName ?? "غير محدد",
+                    Iban       = model.Iban,
+                    IsActive   = true,
+                    CreatedBy  = User.FindFirst("FullName")?.Value ?? "system"
+                };
+                await _uow.EmployeeBankAccounts.AddAsync(bank);
+                await _uow.SaveChangesAsync();
+            }
+
             TempData["Success"] = $"تم إضافة الموظف {model.FullNameAr} بنجاح";
             return RedirectToAction(nameof(Index));
         }
@@ -130,6 +145,7 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
             if (employee == null) return NotFound();
 
             var contract = await _uow.Contracts.GetActiveContractAsync(id);
+            var bankAccount = await _uow.EmployeeBankAccounts.GetActiveByEmployeeAsync(id);
 
             var vm = new EmployeeEditVM
             {
@@ -149,6 +165,8 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
                 TransportAllowance = contract?.TransportAllowance ?? 0,
                 ContractType       = contract?.ContractType       ?? ContractType.Unlimited,
                 ContractEndDate    = contract?.EndDate,
+                BankName           = bankAccount?.BankName,
+                Iban               = bankAccount?.Iban
             };
 
             return View(await BuildEditVM(vm));
@@ -179,6 +197,33 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
             employee.UpdatedAt      = DateTime.UtcNow;
 
             _uow.Employees.Update(employee);
+            
+            // Handle bank account
+            var bank = await _uow.EmployeeBankAccounts.GetActiveByEmployeeAsync(employee.Id);
+            if (!string.IsNullOrWhiteSpace(model.Iban))
+            {
+                if (bank == null)
+                {
+                    bank = new EmployeeBankAccount
+                    {
+                        EmployeeId = employee.Id,
+                        BankName   = model.BankName ?? "غير محدد",
+                        Iban       = model.Iban,
+                        IsActive   = true,
+                        CreatedBy  = User.FindFirst("FullName")?.Value ?? "system"
+                    };
+                    await _uow.EmployeeBankAccounts.AddAsync(bank);
+                }
+                else
+                {
+                    bank.BankName  = model.BankName ?? "غير محدد";
+                    bank.Iban      = model.Iban;
+                    bank.UpdatedBy = User.FindFirst("FullName")?.Value ?? "system";
+                    bank.UpdatedAt = DateTime.UtcNow;
+                    _uow.EmployeeBankAccounts.Update(bank);
+                }
+            }
+
             await _uow.SaveChangesAsync();
 
             TempData["Success"] = "تم تحديث بيانات الموظف";
@@ -198,6 +243,7 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
                 .ToDictionary(d => d.Id, d => d.Name);
             var shifts = (await _uow.Shifts.GetActiveAsync()).ToList();
             var currentShiftAssignment = await _uow.ShiftAssignments.GetActiveByEmployeeAsync(id);
+            var bankAccount = await _uow.EmployeeBankAccounts.GetActiveByEmployeeAsync(id);
 
             ViewBag.Employee   = employee;
             ViewBag.Contract   = contract;
@@ -207,6 +253,7 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
                 : "—";
             ViewBag.Shifts       = shifts;
             ViewBag.CurrentShift = currentShiftAssignment?.Shift;
+            ViewBag.BankAccount  = bankAccount;
 
             return View();
         }
@@ -231,6 +278,62 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
                 : $"تم تعطيل الموظف {employee.FullNameAr}";
 
             return RedirectToAction(nameof(Index));
+        }
+
+        // ── GET: /CompanyAdmin/Employees/EditBank/id ───────────────────
+        public async Task<IActionResult> EditBank(Guid id)
+        {
+            var employee = await _uow.Employees.GetByIdAsync(id);
+            if (employee == null) return NotFound();
+
+            var bank = await _uow.EmployeeBankAccounts.GetActiveByEmployeeAsync(id);
+
+            var vm = new EmployeeBankVM
+            {
+                EmployeeId = employee.Id,
+                EmployeeName = employee.FullNameAr,
+                BankName = bank?.BankName ?? string.Empty,
+                Iban = bank?.Iban ?? string.Empty
+            };
+
+            return View(vm);
+        }
+
+        // ── POST: /CompanyAdmin/Employees/EditBank ─────────────────────
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditBank(EmployeeBankVM model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var bank = await _uow.EmployeeBankAccounts.GetActiveByEmployeeAsync(model.EmployeeId);
+
+            if (bank == null)
+            {
+                bank = new EmployeeBankAccount
+                {
+                    EmployeeId = model.EmployeeId,
+                    BankName = model.BankName,
+                    Iban = model.Iban,
+                    IsActive = true,
+                    CreatedBy = User.FindFirst("FullName")?.Value ?? "system"
+                };
+                await _uow.EmployeeBankAccounts.AddAsync(bank);
+            }
+            else
+            {
+                bank.BankName = model.BankName;
+                bank.Iban = model.Iban;
+                bank.UpdatedBy = User.FindFirst("FullName")?.Value ?? "system";
+                bank.UpdatedAt = DateTime.UtcNow;
+                _uow.EmployeeBankAccounts.Update(bank);
+            }
+
+            await _uow.SaveChangesAsync();
+
+            TempData["Success"] = "تم تحديث البيانات البنكية للموظف بنجاح";
+            return RedirectToAction(nameof(Details), new { id = model.EmployeeId });
         }
 
         // ── Private Helpers ───────────────────────────────────────────

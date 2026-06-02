@@ -1,0 +1,66 @@
+@model Intilaqah.Models.ViewModels.CompanyAdmin.EmployeeBankVM
+@{
+    ViewData["Title"] = "تعديل البيانات البنكية";
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">تعديل البيانات البنكية</h1>
+        <div class="page-subtitle">تعديل الحساب البنكي للموظف: @Model.EmployeeName</div>
+    </div>
+    <div class="page-actions">
+        <a href="/CompanyAdmin/Employees/Details/@Model.EmployeeId" class="btn-il btn-il-light">إلغاء</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="il-card">
+            <form method="post" asp-action="EditBank">
+                <input type="hidden" asp-for="EmployeeId" />
+                <input type="hidden" asp-for="EmployeeName" />
+                
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="BankName" class="form-label"></label>
+                    <input asp-for="BankName" class="form-control" placeholder="مثال: البنك الأهلي السعودي" />
+                    <span asp-validation-for="BankName" class="text-danger"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Iban" class="form-label"></label>
+                    <input asp-for="Iban" class="form-control" style="text-align: left; direction: ltr;" placeholder="SA0000000000000000000000" maxlength="24" />
+                    <div class="form-text text-muted">يجب أن يحتوي على 22 رقماً بعد SA</div>
+                    <span asp-validation-for="Iban" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn-il btn-il-primary w-100">
+                    <i class="ti ti-check"></i> حفظ البيانات البنكية
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var ibanInput = document.getElementById('Iban');
+        if (ibanInput) {
+            ibanInput.addEventListener('input', function () {
+                var val = this.value.toUpperCase().replace(/[^0-9A-Z]/g, '');
+                if (val.length > 0) {
+                    if (val === 'S') {
+                        // allow just 'S' while typing
+                    } else if (!val.startsWith('SA')) {
+                        val = 'SA' + val.replace(/^S?A?/, '');
+                    }
+                }
+                this.value = val;
+            });
+        }
+    });
+</script>
+}

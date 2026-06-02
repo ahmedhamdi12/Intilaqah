@@ -58,6 +58,14 @@ namespace Intilaqah.Models.ViewModels.CompanyAdmin
         [Display(Name = "تاريخ انتهاء العقد")]
         public DateTime? ContractEndDate { get; set; }
 
+        [Display(Name = "اسم البنك")]
+        public string? BankName { get; set; }
+
+        [StringLength(24, MinimumLength = 24, ErrorMessage = "رقم الآيبان يجب أن يتكون من 24 حرفاً ورقم")]
+        [RegularExpression(@"^SA\d{22}$", ErrorMessage = "رقم الآيبان غير صحيح، يجب أن يبدأ بـ SA ويليه 22 رقماً")]
+        [Display(Name = "رقم الآيبان (IBAN)")]
+        public string? Iban { get; set; }
+
         // For dropdowns — populated in controller
         public IEnumerable<SelectListItem> Departments    { get; set; } = [];
         public IEnumerable<SelectListItem> Nationalities  { get; set; } = [];

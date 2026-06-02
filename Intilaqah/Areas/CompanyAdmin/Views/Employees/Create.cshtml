@@ -143,6 +143,35 @@
             </div>
         </div>
 
+        @* ── Bank Info ── *@
+        <div class="col-12">
+            <div class="il-card">
+                <div class="il-card-header">
+                    <h2 class="card-title">
+                        <i class="ti ti-building-bank"></i> البيانات البنكية (اختياري)
+                    </h2>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="BankName" class="il-form-label"></label>
+                        <input asp-for="BankName" class="il-form-control"
+                               placeholder="مثال: البنك الأهلي السعودي" />
+                        <span asp-validation-for="BankName"
+                              class="text-danger" style="font-size:12px"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Iban" class="il-form-label"></label>
+                        <input asp-for="Iban" class="il-form-control"
+                               style="text-align: left; direction: ltr;"
+                               placeholder="SA0000000000000000000000" maxlength="24" />
+                        <div class="form-text text-muted" style="font-size:12px">يجب أن يحتوي على 22 رقماً بعد SA</div>
+                        <span asp-validation-for="Iban"
+                              class="text-danger" style="font-size:12px"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         @* ── Submit ── *@
         <div class="col-12">
             <div class="d-flex gap-2 justify-content-end">
@@ -167,5 +196,21 @@ function toggleEndDate() {
 }
 sel?.addEventListener('change', toggleEndDate);
 toggleEndDate();
+
+// IBAN formatting
+var ibanInput = document.getElementById('Iban');
+if (ibanInput) {
+    ibanInput.addEventListener('input', function () {
+        var val = this.value.toUpperCase().replace(/[^0-9A-Z]/g, '');
+        if (val.length > 0) {
+            if (val === 'S') {
+                // allow just 'S' while typing
+            } else if (!val.startsWith('SA')) {
+                val = 'SA' + val.replace(/^S?A?/, '');
+            }
+        }
+        this.value = val;
+    });
+}
 </script>
 }
