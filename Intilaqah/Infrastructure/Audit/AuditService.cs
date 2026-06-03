@@ -1,26 +1,25 @@
-using Intilaqah.Data;
 using Intilaqah.Models;
 using Intilaqah.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 
 namespace Intilaqah.Infrastructure.Audit
 {
     public class AuditService : IAuditService
     {
-        private readonly IServiceScopeFactory  _scopeFactory;
+        private readonly string _connectionString;
         private readonly ITenantResolver       _tenantResolver;
         private readonly IHttpContextAccessor  _httpAccessor;
 
         public AuditService(
-            IServiceScopeFactory  scopeFactory,
+            IConfiguration        configuration,
             ITenantResolver       tenantResolver,
             IHttpContextAccessor  httpAccessor)
         {
-            _scopeFactory   = scopeFactory;
-            _tenantResolver = tenantResolver;
-            _httpAccessor   = httpAccessor;
+            _connectionString = configuration.GetConnectionString("DefaultConnection")!;
+            _tenantResolver   = tenantResolver;
+            _httpAccessor     = httpAccessor;
         }
 
         public async Task LogAsync(
@@ -39,32 +38,42 @@ namespace Intilaqah.Infrastructure.Audit
                 var ip = _httpAccessor.HttpContext?.Connection
                     .RemoteIpAddress?.ToString();
 
-                var log = new AuditLog
-                {
-                    TenantId   = tenantId ?? _tenantResolver.GetTenantId(),
-                    UserId     = userId,
-                    UserName   = userName,
-                    Action     = action,
-                    EntityName = entityName,
-                    EntityId   = entityId,
-                    OldValues  = oldValues,
-                    NewValues  = newValues,
-                    IpAddress  = ip,
-                    CreatedAt  = DateTime.UtcNow,
-                };
+                var id        = Guid.NewGuid();
+                var createdAt = DateTime.UtcNow;
+                var tenant    = tenantId ?? _tenantResolver.GetTenantId();
 
-                // Use a fresh scope + DbContext to avoid shared-state conflicts
-                // with the UnitOfWork's DbContext that triggered this audit
-                using var scope = _scopeFactory.CreateScope();
-                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                db.AuditLogs.Add(log);
-                await db.SaveChangesAsync();
+                // Direct ADO.NET — completely independent from EF DbContext
+                using var conn = new SqlConnection(_connectionString);
+                await conn.OpenAsync();
+
+                const string sql = @"
+                    INSERT INTO AuditLogs 
+                        (Id, TenantId, UserId, UserName, [Action], EntityName, EntityId, OldValues, NewValues, IpAddress, CreatedAt)
+                    VALUES 
+                        (@Id, @TenantId, @UserId, @UserName, @Action, @EntityName, @EntityId, @OldValues, @NewValues, @IpAddress, @CreatedAt)";
+
+                using var cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@Id",         id);
+                cmd.Parameters.AddWithValue("@TenantId",   (object?)tenant ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@UserId",     (object?)userId ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@UserName",   (object?)userName ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Action",     action);
+                cmd.Parameters.AddWithValue("@EntityName", entityName);
+                cmd.Parameters.AddWithValue("@EntityId",   (object?)entityId ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@OldValues",  (object?)oldValues ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@NewValues",  (object?)newValues ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@IpAddress",  (object?)ip ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@CreatedAt",  createdAt);
+
+                await cmd.ExecuteNonQueryAsync();
+
+                Console.WriteLine($"[AuditLog] ✅ {action} on {entityName} (ID: {entityId}) by {userName}");
             }
             catch (Exception ex)
             {
-                // Log to console so we can debug — never break the main flow
-                System.Diagnostics.Debug.WriteLine($"[AuditService ERROR] {ex.Message}");
-                Console.WriteLine($"[AuditService ERROR] {ex.Message}");
+                // Never let audit failure break the main flow, but log it
+                Console.WriteLine($"[AuditService ERROR] ❌ {ex.Message}");
+                Console.WriteLine($"[AuditService ERROR] Stack: {ex.StackTrace}");
             }
         }
     }

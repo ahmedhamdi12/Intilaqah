@@ -18,15 +18,15 @@ namespace Intilaqah.Areas.SuperAdmin.Controllers
 
         public async Task<IActionResult> Index(
             string? entity = null,
-            string? action = null,
+            string? logAction = null,
             int     page   = 1)
         {
             var query = _context.AuditLogs.AsQueryable();
 
             if (!string.IsNullOrEmpty(entity))
                 query = query.Where(a => a.EntityName == entity);
-            if (!string.IsNullOrEmpty(action))
-                query = query.Where(a => a.Action == action);
+            if (!string.IsNullOrEmpty(logAction))
+                query = query.Where(a => a.Action == logAction);
 
             var total = await query.CountAsync();
             var logs  = await query
@@ -39,7 +39,7 @@ namespace Intilaqah.Areas.SuperAdmin.Controllers
             ViewBag.CurrentPage  = page;
             ViewBag.TotalPages   = (int)Math.Ceiling(total / 50.0);
             ViewBag.EntityFilter = entity;
-            ViewBag.ActionFilter = action;
+            ViewBag.ActionFilter = logAction;
 
             return View(logs);
         }
