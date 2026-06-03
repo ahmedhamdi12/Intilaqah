@@ -12,6 +12,7 @@ namespace Intilaqah.Data
 
         // EF Core reads this property at query time to parameterize the filter
         private Guid? TenantId => _tenantResolver.GetTenantId();
+        private string? CurrentUserId => _tenantResolver.GetCurrentUserId();
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options,
             ITenantResolver tenantResolver) : base(options)
@@ -38,6 +39,8 @@ namespace Intilaqah.Data
         public DbSet<SalaryAdvanceTransaction> SalaryAdvanceTransactions => Set<SalaryAdvanceTransaction>();
         public DbSet<PayrollRun>      PayrollRuns      => Set<PayrollRun>();
         public DbSet<PaySlip>         PaySlips         => Set<PaySlip>();
+        public DbSet<AuditLog>        AuditLogs        => Set<AuditLog>();
+        public DbSet<Notification>    Notifications    => Set<Notification>();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -46,6 +49,9 @@ namespace Intilaqah.Data
             // Composite PK for RolePermission
             builder.Entity<RolePermission>()
                 .HasKey(rp => new { rp.RoleId, rp.PermissionId });
+
+            builder.Entity<Notification>()
+                .HasQueryFilter(n => CurrentUserId == null || n.UserId == CurrentUserId);
 
             // Global query filters — tenant isolation + soft delete
             // Reference TenantId property (not method call) so EF Core can parameterize it

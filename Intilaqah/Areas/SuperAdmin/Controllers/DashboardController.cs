@@ -1,6 +1,7 @@
 using Intilaqah.Models;
 using Intilaqah.Models.ViewModels.SuperAdmin;
 using Intilaqah.UnitOfWork;
+using Intilaqah.Infrastructure.Notifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,10 +12,14 @@ namespace Intilaqah.Areas.SuperAdmin.Controllers
     public class DashboardController : Controller
     {
         private readonly IUnitOfWork _uow;
+        private readonly INotificationService _notificationService;
 
-        public DashboardController(IUnitOfWork uow)
+        public DashboardController(
+            IUnitOfWork uow,
+            INotificationService notificationService)
         {
-            _uow = uow;
+            _uow                 = uow;
+            _notificationService = notificationService;
         }
 
         public async Task<IActionResult> Index()
@@ -74,6 +79,8 @@ namespace Intilaqah.Areas.SuperAdmin.Controllers
                 }).ToList()
             };
 
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
+            ViewBag.NotifCount = await _notificationService.GetUnreadCountAsync(userId);
             ViewBag.UserFullName = User.FindFirst("FullName")?.Value ?? User.Identity?.Name;
             return View(vm);
         }

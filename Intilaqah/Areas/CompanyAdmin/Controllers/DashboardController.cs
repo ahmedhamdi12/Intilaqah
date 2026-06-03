@@ -1,4 +1,5 @@
 using Intilaqah.UnitOfWork;
+using Intilaqah.Infrastructure.Notifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,10 +10,14 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
     public class DashboardController : Controller
     {
         private readonly IUnitOfWork _uow;
+        private readonly INotificationService _notificationService;
 
-        public DashboardController(IUnitOfWork uow)
+        public DashboardController(
+            IUnitOfWork uow,
+            INotificationService notificationService)
         {
-            _uow = uow;
+            _uow                 = uow;
+            _notificationService = notificationService;
         }
 
         public async Task<IActionResult> Index()
@@ -25,7 +30,10 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
             var expiringDocs = await _uow.Documents.GetExpiringAsync(30);
             var expiringDocsCount = expiringDocs.Count();
             ViewBag.ExpiringDocs = expiringDocsCount;
-            ViewBag.NotifCount = expiringDocsCount;
+            
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
+            ViewBag.NotifCount = await _notificationService.GetUnreadCountAsync(userId);
+            
             ViewBag.UserFullName = User.FindFirst("FullName")?.Value;
 
             decimal saudizationPct = ViewBag.SaudizationPct;

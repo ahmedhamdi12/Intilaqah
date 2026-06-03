@@ -7,6 +7,11 @@ using Intilaqah.UnitOfWork;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Intilaqah.Infrastructure.Security;
+using Hangfire;
+using Hangfire.SqlServer;
+using Intilaqah.Infrastructure.Audit;
+using Intilaqah.Infrastructure.BackgroundJobs;
+using Intilaqah.Infrastructure.Notifications;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -79,6 +84,30 @@ builder.Services.AddScoped<Supabase.Client>(provider =>
     var options = new Supabase.SupabaseOptions { AutoConnectRealtime = false };
     return new Supabase.Client(url, key, options);
 });
+
+// ── Infrastructure Services ───────────────────────────────────
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<DocumentExpiryJob>();
+
+// ── Hangfire ──────────────────────────────────────────────────
+builder.Services.AddHangfire(config => config
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        new SqlServerStorageOptions
+        {
+            CommandBatchMaxTimeout       = TimeSpan.FromMinutes(5),
+            SlidingInvisibilityTimeout   = TimeSpan.FromMinutes(5),
+            QueuePollInterval            = TimeSpan.Zero,
+            UseRecommendedIsolationLevel = true,
+            DisableGlobalLocks           = true,
+        }));
+
+builder.Services.AddHangfireServer();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
@@ -115,16 +144,28 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 
+// ── Hangfire Dashboard (SuperAdmin only) ──────────────────────
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    DashboardTitle = "Intilaqah — Background Jobs",
+    Authorization  = new[] { new HangfireAuthFilter() }
+});
+
+// ── Register Recurring Jobs ───────────────────────────────────
+RecurringJob.AddOrUpdate<DocumentExpiryJob>(
+    "document-expiry-check",
+    job => job.RunAsync(),
+    "0 8 * * *");  // Daily at 8:00 AM
 
 app.MapControllerRoute(
     name: "areas",
     pattern: "{area:exists}/{controller=Dashboard}/{action=Index}/{id?}");
-
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+app.MapHangfireDashboard();
 
 app.Run();
