@@ -54,6 +54,7 @@
                     <th>المستخدم</th>
                     <th>التاريخ</th>
                     <th>IP</th>
+                    <th>التفاصيل</th>
                 </tr>
             </thead>
             <tbody>
@@ -100,6 +101,61 @@
                         <td style="font-size:12px;color:var(--il-muted);
                                    font-family:monospace">
                             @(log.IpAddress ?? "—")
+                        </td>
+                        <td>
+                            @if (log.Action == "Update" && !string.IsNullOrEmpty(log.OldValues) && !string.IsNullOrEmpty(log.NewValues))
+                            {
+                                try
+                                {
+                                    var oldDict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, System.Text.Json.JsonElement>>(log.OldValues);
+                                    var newDict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, System.Text.Json.JsonElement>>(log.NewValues);
+
+                                    var changes = new List<string>();
+                                    if (oldDict != null && newDict != null)
+                                    {
+                                        foreach (var kvp in oldDict)
+                                        {
+                                            if (newDict.TryGetValue(kvp.Key, out var newVal))
+                                            {
+                                                var oldStr = kvp.Value.ToString();
+                                                var newStr = newVal.ToString();
+                                                if (oldStr != newStr && kvp.Key != "UpdatedAt" && kvp.Key != "UpdatedBy" && kvp.Key != "CreatedAt" && kvp.Key != "CreatedBy")
+                                                {
+                                                    changes.Add($"<strong>{kvp.Key}</strong>: <span style='text-decoration: line-through; color: #dc3545;'>{oldStr}</span> ➔ <span style='color: #28a745;'>{newStr}</span>");
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (changes.Any())
+                                    {
+                                        <div style="max-height: 120px; overflow-y: auto; font-size: 11px; direction: ltr; text-align: left; background: var(--il-bg-surface); padding: 4px; border-radius: 4px; border: 1px solid var(--il-border-color);">
+                                            <ul style="margin: 0; padding-left: 15px; list-style-type: none;">
+                                                @foreach (var c in changes)
+                                                {
+                                                    <li style="margin-bottom: 2px;">@Html.Raw(c)</li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted" style="font-size: 11px;">لا يوجد تغيير فعلي</span>
+                                    }
+                                }
+                                catch
+                                {
+                                    <span class="text-muted" style="font-size: 11px;">تعذر عرض التفاصيل</span>
+                                }
+                            }
+                            else if (log.Action == "Create")
+                            {
+                                <span class="text-muted" style="font-size: 11px;">تم الإنشاء</span>
+                            }
+                            else if (log.Action == "Delete")
+                            {
+                                <span class="text-muted" style="font-size: 11px;">تم الحذف</span>
+                            }
                         </td>
                     </tr>
                 }
