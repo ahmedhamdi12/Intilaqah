@@ -1,0 +1,197 @@
+@model Intilaqah.Models.ViewModels.CompanyAdmin.IntegrationSettingsVM
+@{
+    ViewData["Title"] = "إعدادات الربط";
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">إعدادات الربط الخارجي</h1>
+        <div class="page-subtitle">
+            ربط المنشأة بمنصات الجهات الحكومية
+        </div>
+    </div>
+</div>
+
+@* Notice about stubs *@
+<div class="il-card mb-4"
+     style="border-right:3px solid var(--il-info);background:#eff6ff">
+    <div style="display:flex;align-items:flex-start;gap:10px">
+        <i class="ti ti-info-circle"
+           style="font-size:20px;color:var(--il-info);flex-shrink:0;margin-top:2px">
+        </i>
+        <div>
+            <div style="font-size:13.5px;font-weight:600;
+                        color:var(--il-info);margin-bottom:4px">
+                الربط في مرحلة التجهيز
+            </div>
+            <div style="font-size:13px;color:var(--il-muted)">
+                يمكنك حفظ بيانات الاعتماد الآن.
+                سيتم تفعيل الربط الفعلي مع قوى ومدد فور توفر بيانات الاعتماد الرسمية.
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+
+    @* Qiwa Card *@
+    <div class="col-lg-6">
+        <div class="il-card h-100">
+            <div class="il-card-header">
+                <h2 class="card-title">
+                    <i class="ti ti-building-community"
+                       style="color:#1d4ed8"></i>
+                    منصة قوى
+                </h2>
+                <span class="il-badge @(Model.QiwaEnabled ? "active" : "inactive")">
+                    @(Model.QiwaEnabled ? "مفعّل" : "غير مفعّل")
+                </span>
+            </div>
+
+            @if (Model.QiwaLastSync.HasValue)
+            {
+                <div style="font-size:12px;color:var(--il-muted);margin-bottom:12px">
+                    آخر مزامنة:
+                    @Model.QiwaLastSync?.ToString("dd/MM/yyyy hh:mm tt")
+                    —
+                    <span class="il-badge @(Model.QiwaLastStatus == "Success"
+                        ? "active" : "warning")">
+                        @Model.QiwaLastStatus
+                    </span>
+                </div>
+            }
+
+            <form asp-action="SaveQiwa" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input type="checkbox"
+                               name="QiwaEnabled"
+                               class="form-check-input"
+                               id="qiwaEnabled"
+                               @(Model.QiwaEnabled ? "checked" : "")
+                               value="true" />
+                        <label class="form-check-label"
+                               for="qiwaEnabled"
+                               style="font-family:'Tajawal',sans-serif">
+                            تفعيل الربط مع قوى
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="il-form-label">رقم المنشأة في قوى</label>
+                    <input type="text" name="QiwaExternalId"
+                           class="il-form-control"
+                           value="@Model.QiwaExternalId"
+                           placeholder="establishment-id" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="il-form-label">Client ID</label>
+                    <input type="text" name="QiwaClientId"
+                           class="il-form-control"
+                           value="@Model.QiwaClientId"
+                           placeholder="client-id" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="il-form-label">API Key</label>
+                    <input type="password" name="QiwaApiKey"
+                           class="il-form-control"
+                           value="@Model.QiwaApiKey"
+                           placeholder="••••••••••••••••" />
+                    <div style="font-size:11.5px;color:var(--il-muted);margin-top:4px">
+                        يُحفظ مشفراً — لا يُعرض بعد الحفظ
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-il btn-il-primary">
+                    <i class="ti ti-device-floppy"></i> حفظ إعدادات قوى
+                </button>
+            </form>
+        </div>
+    </div>
+
+    @* Mudad Card *@
+    <div class="col-lg-6">
+        <div class="il-card h-100">
+            <div class="il-card-header">
+                <h2 class="card-title">
+                    <i class="ti ti-receipt-2"
+                       style="color:#0d9e6e"></i>
+                    منصة مدد (WPS)
+                </h2>
+                <span class="il-badge @(Model.MudadEnabled ? "active" : "inactive")">
+                    @(Model.MudadEnabled ? "مفعّل" : "غير مفعّل")
+                </span>
+            </div>
+
+            @if (Model.MudadLastSync.HasValue)
+            {
+                <div style="font-size:12px;color:var(--il-muted);margin-bottom:12px">
+                    آخر مزامنة:
+                    @Model.MudadLastSync?.ToString("dd/MM/yyyy hh:mm tt")
+                    —
+                    <span class="il-badge @(Model.MudadLastStatus == "Success"
+                        ? "active" : "warning")">
+                        @Model.MudadLastStatus
+                    </span>
+                </div>
+            }
+
+            <form asp-action="SaveMudad" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input type="checkbox"
+                               name="MudadEnabled"
+                               class="form-check-input"
+                               id="mudadEnabled"
+                               @(Model.MudadEnabled ? "checked" : "")
+                               value="true" />
+                        <label class="form-check-label"
+                               for="mudadEnabled"
+                               style="font-family:'Tajawal',sans-serif">
+                            تفعيل الربط مع مدد
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="il-form-label">رقم الشركة في مدد</label>
+                    <input type="text" name="MudadExternalId"
+                           class="il-form-control"
+                           value="@Model.MudadExternalId"
+                           placeholder="company-id" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="il-form-label">Client ID</label>
+                    <input type="text" name="MudadClientId"
+                           class="il-form-control"
+                           value="@Model.MudadClientId"
+                           placeholder="client-id" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="il-form-label">API Key</label>
+                    <input type="password" name="MudadApiKey"
+                           class="il-form-control"
+                           value="@Model.MudadApiKey"
+                           placeholder="••••••••••••••••" />
+                    <div style="font-size:11.5px;color:var(--il-muted);margin-top:4px">
+                        يُحفظ مشفراً — لا يُعرض بعد الحفظ
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-il btn-il-primary">
+                    <i class="ti ti-device-floppy"></i> حفظ إعدادات مدد
+                </button>
+            </form>
+        </div>
+    </div>
+
+</div>

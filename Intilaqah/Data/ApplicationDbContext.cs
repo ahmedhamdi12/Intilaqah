@@ -45,6 +45,9 @@ namespace Intilaqah.Data
         public DbSet<AuditLog>        AuditLogs        => Set<AuditLog>();
         public DbSet<Notification>    Notifications    => Set<Notification>();
 
+        public DbSet<Intilaqah.Models.Integration.TenantIntegrationSettings> TenantIntegrationSettings => Set<Intilaqah.Models.Integration.TenantIntegrationSettings>();
+        public DbSet<Intilaqah.Models.Integration.IntegrationLog> IntegrationLogs => Set<Intilaqah.Models.Integration.IntegrationLog>();
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -105,6 +108,14 @@ namespace Intilaqah.Data
 
             builder.Entity<PaySlip>()
                 .HasQueryFilter(ps => (TenantId == null || ps.TenantId == TenantId) && !ps.IsDeleted);
+
+            builder.Entity<Intilaqah.Models.Integration.TenantIntegrationSettings>()
+                .HasQueryFilter(s => (TenantId == null || s.TenantId == TenantId) && !s.IsDeleted);
+
+            builder.Entity<Intilaqah.Models.Integration.TenantIntegrationSettings>()
+                .HasIndex(s => new { s.TenantId, s.Provider })
+                .IsUnique()
+                .HasFilter("[IsDeleted] = 0"); // Soft delete support for unique index
         }
 
         // Audit hook — auto-fill CreatedBy / UpdatedBy / DeletedBy + Audit Logging

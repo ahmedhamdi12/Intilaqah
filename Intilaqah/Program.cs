@@ -12,6 +12,10 @@ using Hangfire.SqlServer;
 using Intilaqah.Infrastructure.Audit;
 using Intilaqah.Infrastructure.BackgroundJobs;
 using Intilaqah.Infrastructure.Notifications;
+using Intilaqah.Infrastructure.Integrations;
+using Intilaqah.Infrastructure.Integrations.Interfaces;
+using Intilaqah.Infrastructure.Integrations.Mudad;
+using Intilaqah.Infrastructure.Integrations.Qiwa;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -90,6 +94,15 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<DocumentExpiryJob>();
 
+// ── Integration Services ──────────────────────────────────────
+// STUBS — replace with real implementations when API keys available
+builder.Services.AddScoped<IQiwaService,  QiwaServiceStub>();
+builder.Services.AddScoped<IMudadService, MudadServiceStub>();
+builder.Services.AddScoped<IIntegrationSettingsService, IntegrationSettingsService>();
+
+// Background jobs
+builder.Services.AddScoped<IntegrationSyncJob>();
+
 // ── Hangfire ──────────────────────────────────────────────────
 builder.Services.AddHangfire(config => config
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
@@ -156,6 +169,11 @@ RecurringJob.AddOrUpdate<DocumentExpiryJob>(
     "document-expiry-check",
     job => job.RunAsync(),
     "0 8 * * *");  // Daily at 8:00 AM
+
+RecurringJob.AddOrUpdate<IntegrationSyncJob>(
+    "integration-sync-retry",
+    job => job.RunAsync(),
+    "*/30 * * * *");  // Every 30 minutes
 
 app.MapControllerRoute(
     name: "areas",
