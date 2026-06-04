@@ -30,16 +30,38 @@ else
         </div>
     </div>
     <div class="col-md-3">
-        <div class="il-kpi">
-            <h6 class="text-muted">نسبة التوطين (@ViewBag.NitaqatLabel)</h6>
-            <div class="d-flex justify-content-between align-items-center">
-                @{
-                    string pctColor = ViewBag.SaudizationPct >= 30 ? "text-success" : "text-danger";
-                }
-                <h3 class="mb-0 @pctColor">@ViewBag.SaudizationPct.ToString("0.0")%</h3>
-                <i class="ti ti-chart-pie @pctColor" style="font-size: 2rem;"></i>
+        <a href="/CompanyAdmin/Nitaqat" class="text-decoration-none">
+            <div class="il-kpi">
+                <div class="kpi-top">
+                    <div class="kpi-icon @(ViewBag.NitaqatColor == "red"
+                        ? "red" : ViewBag.NitaqatColor == "yellow"
+                        ? "amber" : "green")">
+                        <i class="ti ti-chart-pie"></i>
+                    </div>
+                    <span class="kpi-trend @(ViewBag.SaudizationPct >= 30
+                        ? "up" : "down")">
+                        @(ViewBag.SaudizationPct >= 30 ? "↑" : "↓")
+                    </span>
+                </div>
+                <div class="kpi-value"
+                     style="color:@(ViewBag.NitaqatColor == "red" ? "var(--il-danger)"
+                        : ViewBag.NitaqatColor == "yellow" ? "var(--il-warning)"
+                        : "var(--il-success)")">
+                    @ViewBag.SaudizationPct%
+                </div>
+                <div class="kpi-label">نسبة السعودة</div>
+                <div class="kpi-sub">
+                    نطاق <strong>@ViewBag.NitaqatLabel</strong>
+                    @if ((decimal)(ViewBag.NitaqatNeeded ?? 0m) > 0)
+                    {
+                        <span style="color:var(--il-warning)">
+                            — يلزم +@ViewBag.NitaqatNeeded
+                            لـ @ViewBag.NitaqatNextZone
+                        </span>
+                    }
+                </div>
             </div>
-        </div>
+        </a>
     </div>
     <div class="col-md-3">
         <div class="il-kpi">

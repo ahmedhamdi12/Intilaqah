@@ -92,6 +92,8 @@ builder.Services.AddScoped<Supabase.Client>(provider =>
 // ── Infrastructure Services ───────────────────────────────────
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<INitaqatService, NitaqatService>();
+builder.Services.AddScoped<IDocumentAlertService, DocumentAlertService>();
 builder.Services.AddScoped<DocumentExpiryJob>();
 
 // ── Integration Services ──────────────────────────────────────

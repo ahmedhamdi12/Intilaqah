@@ -1,0 +1,374 @@
+@model Intilaqah.Models.ViewModels.CompanyAdmin.NitaqatPageVM
+@{
+    ViewData["Title"] = "نطاقات والسعودة";
+    var zone = Model.CurrentZone;
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">نطاقات والسعودة</h1>
+        <div class="page-subtitle">
+            تحليل وضع التوطين ومتابعة الامتثال
+        </div>
+    </div>
+</div>
+
+@* Current Zone Banner *@
+<div class="il-card mb-4"
+     style="border-right:4px solid
+        @(zone.CssClass == "platinum" ? "#64748b" :
+          zone.CssClass == "green"    ? "#0d9e6e" :
+          zone.CssClass == "yellow"   ? "#d97706" : "#dc2626")">
+    <div class="row g-3 align-items-center">
+        <div class="col-md-3 text-center">
+            <div style="font-size:13px;color:var(--il-muted);margin-bottom:6px">
+                النطاق الحالي
+            </div>
+            <div style="font-size:36px;font-weight:700;
+                color:@(zone.CssClass == "platinum" ? "#64748b" :
+                        zone.CssClass == "green"    ? "#0d9e6e" :
+                        zone.CssClass == "yellow"   ? "#d97706" : "#dc2626")">
+                @zone.ZoneDetail
+            </div>
+        </div>
+        <div class="col-md-3 text-center">
+            <div style="font-size:13px;color:var(--il-muted);margin-bottom:6px">
+                نسبة السعودة
+            </div>
+            <div style="font-size:42px;font-weight:700;color:var(--il-primary)">
+                @zone.SaudizationPercentage%
+            </div>
+        </div>
+        <div class="col-md-3 text-center">
+            <div style="font-size:13px;color:var(--il-muted);margin-bottom:6px">
+                الموظفون
+            </div>
+            <div style="font-size:18px;font-weight:700">
+                سعودي: @zone.SaudiCount
+            </div>
+            <div style="font-size:14px;color:var(--il-muted)">
+                وافد: @zone.NonSaudiCount |
+                الإجمالي: @zone.TotalCount
+            </div>
+        </div>
+        <div class="col-md-3 text-center">
+            @if (zone.NeededForNextZone > 0)
+            {
+                <div style="font-size:13px;color:var(--il-muted);margin-bottom:6px">
+                    للوصول لـ @zone.NextZoneLabel
+                </div>
+                <div style="font-size:28px;font-weight:700;
+                            color:var(--il-warning)">
+                    +@zone.NeededForNextZone
+                </div>
+                <div style="font-size:12px;color:var(--il-muted)">
+                    موظف سعودي إضافي
+                </div>
+            }
+            else
+            {
+                <div style="font-size:13px;color:var(--il-success);
+                            font-weight:600">
+                    <i class="ti ti-trophy"
+                       style="font-size:28px;display:block;margin-bottom:4px">
+                    </i>
+                    أعلى نطاق 🏆
+                </div>
+            }
+        </div>
+    </div>
+
+    @* Zone progress bar *@
+    <div style="margin-top:16px">
+        <div style="position:relative;height:18px;font-size:11px;color:var(--il-muted);margin-bottom:5px">
+            <span style="position:absolute; right:0%;">0%</span>
+            <span style="position:absolute; right:5%; transform:translateX(50%); color:#dc2626">أحمر</span>
+            <span style="position:absolute; right:10%; transform:translateX(50%); color:#d97706">أصفر 10%</span>
+            <span style="position:absolute; right:20%; transform:translateX(50%); color:#16a34a">أخضر 20%</span>
+            <span style="position:absolute; right:30%; transform:translateX(50%); color:#16a34a">30%</span>
+            <span style="position:absolute; right:40%; transform:translateX(50%); color:#64748b">بلاتيني 40%</span>
+            <span style="position:absolute; left:0%;">100%</span>
+        </div>
+        <div style="position:relative;height:10px;border-radius:5px;
+                    background:linear-gradient(to left,
+                        #dc2626 0%,#dc2626 10%,
+                        #f59e0b 10%,#f59e0b 20%,
+                        #16a34a 20%,#16a34a 30%,
+                        #22c55e 30%,#22c55e 40%,
+                        #94a3b8 40%,#94a3b8 100%)">
+            <div style="position:absolute;
+                        top:-3px;
+                        right:@(Math.Min(zone.SaudizationPercentage, 100).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture))%;
+                        transform:translateX(50%);
+                        width:16px;height:16px;border-radius:50%;
+                        background:#fff;
+                        border:3px solid var(--il-primary);
+                        box-shadow:0 2px 6px rgba(0,0,0,.2)">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+
+    @* Simulator *@
+    <div class="col-lg-5">
+        <div class="il-card h-100">
+            <div class="il-card-header">
+                <h2 class="card-title">
+                    <i class="ti ti-calculator"></i>
+                    محاكي التوطين
+                </h2>
+            </div>
+            <div style="font-size:13px;color:var(--il-muted);margin-bottom:16px">
+                جرّب أثر قرارات التوظيف قبل تنفيذها
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-6">
+                    <label class="il-form-label" style="color:var(--il-success)">
+                        + إضافة سعودي
+                    </label>
+                    <input type="number" id="sim-add-saudi"
+                           class="il-form-control" value="0" min="0"
+                           oninput="runSimulator()" />
+                </div>
+                <div class="col-6">
+                    <label class="il-form-label" style="color:var(--il-success)">
+                        + إضافة وافد
+                    </label>
+                    <input type="number" id="sim-add-non"
+                           class="il-form-control" value="0" min="0"
+                           oninput="runSimulator()" />
+                </div>
+                <div class="col-6">
+                    <label class="il-form-label" style="color:var(--il-danger)">
+                        - استغناء سعودي
+                    </label>
+                    <input type="number" id="sim-rem-saudi"
+                           class="il-form-control" value="0" min="0"
+                           oninput="runSimulator()" />
+                </div>
+                <div class="col-6">
+                    <label class="il-form-label" style="color:var(--il-danger)">
+                        - استغناء وافد
+                    </label>
+                    <input type="number" id="sim-rem-non"
+                           class="il-form-control" value="0" min="0"
+                           oninput="runSimulator()" />
+                </div>
+            </div>
+
+            @* Simulator result *@
+            <div id="sim-result"
+                 style="background:var(--il-bg);border-radius:9px;
+                        padding:14px;border:1px solid var(--il-border);
+                        display:none">
+                <div style="font-size:12px;color:var(--il-muted);
+                            margin-bottom:6px">النتيجة المتوقعة</div>
+                <div style="display:flex;justify-content:space-between;
+                            align-items:center">
+                    <div>
+                        <div style="font-size:28px;font-weight:700"
+                             id="sim-pct">—</div>
+                        <div style="font-size:12px;color:var(--il-muted)">
+                            نسبة السعودة
+                        </div>
+                    </div>
+                    <div>
+                        <span id="sim-zone-badge" class="il-badge">—</span>
+                    </div>
+                </div>
+                <div style="font-size:12.5px;margin-top:8px"
+                     id="sim-advice"></div>
+            </div>
+
+            <button onclick="resetSimulator()"
+                    class="btn-il btn-il-outline btn-il-sm mt-3">
+                <i class="ti ti-refresh"></i> إعادة تعيين
+            </button>
+        </div>
+    </div>
+
+    @* Department Breakdown *@
+    <div class="col-lg-7">
+        <div class="il-card">
+            <div class="il-card-header">
+                <h2 class="card-title">
+                    <i class="ti ti-building"></i>
+                    السعودة حسب الأقسام
+                </h2>
+            </div>
+            @if (!Model.DepartmentBreakdown.Any())
+            {
+                <div class="text-center py-4"
+                     style="color:var(--il-muted);font-size:13px">
+                    لا توجد أقسام مسجلة
+                </div>
+            }
+            else
+            {
+                <div style="display:flex;flex-direction:column;gap:12px">
+                    @foreach (var dept in Model.DepartmentBreakdown)
+                    {
+                        var dColor = dept.Percentage >= 40 ? "#94a3b8"
+                                   : dept.Percentage >= 30 ? "#0d9e6e"
+                                   : dept.Percentage >= 20 ? "#22c55e"
+                                   : dept.Percentage >= 10 ? "#d97706"
+                                   : "#dc2626";
+                        <div>
+                            <div style="display:flex;justify-content:space-between;
+                                        font-size:13px;margin-bottom:4px">
+                                <span style="font-weight:500">
+                                    @dept.DepartmentName
+                                </span>
+                                <span style="color:var(--il-muted)">
+                                    @dept.SaudiCount / @dept.TotalCount
+                                    (<strong>@dept.Percentage%</strong>)
+                                </span>
+                            </div>
+                            <div class="il-progress">
+                                <div class="il-progress-fill"
+                                     style="width:@dept.Percentage%;
+                                            background:@dColor">
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+</div>
+
+@* Required Professions *@
+<div class="il-card mt-4">
+    <div class="il-card-header">
+        <h2 class="card-title">
+            <i class="ti ti-list-check"></i>
+            المهن المسعودة (متطلبات نظام العمل)
+        </h2>
+    </div>
+    <div class="table-wrap">
+        <table class="il-table">
+            <thead>
+                <tr>
+                    <th>المهنة</th>
+                    <th>النسبة المطلوبة</th>
+                    <th>النسبة الحالية</th>
+                    <th>الموظفون</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model.RequiredProfessions)
+                {
+                    <tr>
+                        <td><strong>@p.ProfessionName</strong></td>
+                        <td>@p.RequiredPercentage%</td>
+                        <td>
+                            <strong style="color:@(p.IsCompliant
+                                ? "var(--il-success)" : "var(--il-danger)")">
+                                @p.CurrentPercentage%
+                            </strong>
+                        </td>
+                        <td style="color:var(--il-muted)">
+                            @p.CurrentCount / @p.TotalCount
+                        </td>
+                        <td>
+                            @if (p.TotalCount == 0)
+                            {
+                                <span class="il-badge inactive">لا ينطبق</span>
+                            }
+                            else if (p.IsCompliant)
+                            {
+                                <span class="il-badge active">
+                                    <i class="ti ti-check"
+                                       style="font-size:12px"></i>
+                                    ملتزم
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="il-badge danger">
+                                    <i class="ti ti-x"
+                                       style="font-size:12px"></i>
+                                    يحتاج تحسين
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div style="font-size:11.5px;color:var(--il-muted);
+                padding:10px 0;margin-top:8px">
+        * القائمة أعلاه للإرشاد فقط — يُرجى الرجوع لنظام العمل السعودي
+        للحصول على النسب الرسمية الدقيقة.
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const currentSaudi = @zone.SaudiCount;
+const currentTotal = @zone.TotalCount;
+
+async function runSimulator() {
+    const addS   = parseInt(document.getElementById('sim-add-saudi').value)  || 0;
+    const addN   = parseInt(document.getElementById('sim-add-non').value)    || 0;
+    const remS   = parseInt(document.getElementById('sim-rem-saudi').value)  || 0;
+    const remN   = parseInt(document.getElementById('sim-rem-non').value)    || 0;
+
+    if (addS === 0 && addN === 0 && remS === 0 && remN === 0) {
+        document.getElementById('sim-result').style.display = 'none';
+        return;
+    }
+
+    const response = await fetch('/CompanyAdmin/Nitaqat/Simulate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'RequestVerificationToken': document.querySelector(
+                'input[name="__RequestVerificationToken"]')?.value || ''
+        },
+        body: `addSaudi=${addS}&addNonSaudi=${addN}&removeSaudi=${remS}&removeNonSaudi=${remN}`
+    });
+
+    const data = await response.json();
+
+    document.getElementById('sim-pct').textContent =
+        data.percentage.toFixed(1) + '%';
+
+    const badge = document.getElementById('sim-zone-badge');
+    badge.textContent = data.zoneDetail;
+    badge.className   = 'il-badge ' + (
+        data.cssClass === 'platinum' ? 'info'    :
+        data.cssClass === 'green'    ? 'active'  :
+        data.cssClass === 'yellow'   ? 'warning' : 'danger'
+    );
+
+    const advice = document.getElementById('sim-advice');
+    if (data.neededForNext > 0) {
+        advice.innerHTML =
+            `<span style="color:var(--il-muted)">للوصول لـ
+            <strong>${data.nextZoneLabel}</strong>:
+            تحتاج <strong style="color:var(--il-warning)">
+            +${data.neededForNext}</strong> موظف سعودي إضافي</span>`;
+    } else {
+        advice.innerHTML =
+            '<span style="color:var(--il-success)">✓ أعلى نطاق</span>';
+    }
+
+    document.getElementById('sim-result').style.display = 'block';
+}
+
+function resetSimulator() {
+    ['sim-add-saudi','sim-add-non','sim-rem-saudi','sim-rem-non']
+        .forEach(id => document.getElementById(id).value = 0);
+    document.getElementById('sim-result').style.display = 'none';
+}
+</script>
+@Html.AntiForgeryToken()
+}

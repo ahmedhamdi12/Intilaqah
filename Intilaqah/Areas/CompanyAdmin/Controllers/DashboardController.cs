@@ -1,5 +1,6 @@
 using Intilaqah.UnitOfWork;
 using Intilaqah.Infrastructure.Notifications;
+using Intilaqah.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,21 +12,28 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
     {
         private readonly IUnitOfWork _uow;
         private readonly INotificationService _notificationService;
+        private readonly INitaqatService _nitaqatService;
 
         public DashboardController(
             IUnitOfWork uow,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            INitaqatService nitaqatService)
         {
             _uow                 = uow;
             _notificationService = notificationService;
+            _nitaqatService      = nitaqatService;
         }
 
         public async Task<IActionResult> Index()
         {
-            var allEmployees = await _uow.Employees.GetAllAsync();
-            ViewBag.TotalEmployees = allEmployees.Count(e => e.IsActive);
-            ViewBag.SaudiCount = await _uow.Employees.CountSaudiAsync();
-            ViewBag.SaudizationPct = await _uow.Employees.GetSaudizationPercentageAsync();
+            var nitaqat = await _nitaqatService.GetCurrentZoneAsync();
+            ViewBag.SaudizationPct  = nitaqat.SaudizationPercentage;
+            ViewBag.SaudiCount      = nitaqat.SaudiCount;
+            ViewBag.TotalEmployees  = nitaqat.TotalCount;
+            ViewBag.NitaqatColor    = nitaqat.CssClass;
+            ViewBag.NitaqatLabel    = nitaqat.ZoneDetail;
+            ViewBag.NitaqatNeeded   = nitaqat.NeededForNextZone;
+            ViewBag.NitaqatNextZone = nitaqat.NextZoneLabel;
             
             var expiringDocs = await _uow.Documents.GetExpiringAsync(30);
             var expiringDocsCount = expiringDocs.Count();
@@ -35,28 +43,6 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
             ViewBag.NotifCount = await _notificationService.GetUnreadCountAsync(userId);
             
             ViewBag.UserFullName = User.FindFirst("FullName")?.Value;
-
-            decimal saudizationPct = ViewBag.SaudizationPct;
-            if (saudizationPct >= 40)
-            {
-                ViewBag.NitaqatColor = "platinum";
-                ViewBag.NitaqatLabel = "بلاتيني";
-            }
-            else if (saudizationPct >= 30)
-            {
-                ViewBag.NitaqatColor = "green";
-                ViewBag.NitaqatLabel = "أخضر";
-            }
-            else if (saudizationPct >= 20)
-            {
-                ViewBag.NitaqatColor = "yellow";
-                ViewBag.NitaqatLabel = "أصفر";
-            }
-            else
-            {
-                ViewBag.NitaqatColor = "red";
-                ViewBag.NitaqatLabel = "أحمر";
-            }
 
             var tenantIdStr = User.FindFirst("TenantId")?.Value;
             if (Guid.TryParse(tenantIdStr, out var tenantId))

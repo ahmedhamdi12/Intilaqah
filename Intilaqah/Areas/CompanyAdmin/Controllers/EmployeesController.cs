@@ -1,5 +1,6 @@
 using Intilaqah.Models;
 using Intilaqah.Models.ViewModels.CompanyAdmin;
+using Intilaqah.Services;
 using Intilaqah.UnitOfWork;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,10 +13,12 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
     public class EmployeesController : Controller
     {
         private readonly IUnitOfWork _uow;
+        private readonly INitaqatService _nitaqatService;
 
-        public EmployeesController(IUnitOfWork uow)
+        public EmployeesController(IUnitOfWork uow, INitaqatService nitaqatService)
         {
             _uow = uow;
+            _nitaqatService = nitaqatService;
         }
 
         // ── GET: /CompanyAdmin/Employees ──────────────────────────────
@@ -135,6 +138,11 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
             }
 
             TempData["Success"] = $"تم إضافة الموظف {model.FullNameAr} بنجاح";
+
+            var tenantIdClaim = User.FindFirst("TenantId")?.Value;
+            if (Guid.TryParse(tenantIdClaim, out var tenantId))
+                await _nitaqatService.UpdateTenantColorAsync(tenantId);
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -227,6 +235,11 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
             await _uow.SaveChangesAsync();
 
             TempData["Success"] = "تم تحديث بيانات الموظف";
+
+            var tenantIdClaim = User.FindFirst("TenantId")?.Value;
+            if (Guid.TryParse(tenantIdClaim, out var tenantId))
+                await _nitaqatService.UpdateTenantColorAsync(tenantId);
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -276,6 +289,34 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
             TempData["Success"] = employee.IsActive
                 ? $"تم تفعيل الموظف {employee.FullNameAr}"
                 : $"تم تعطيل الموظف {employee.FullNameAr}";
+
+            var tenantIdClaim = User.FindFirst("TenantId")?.Value;
+            if (Guid.TryParse(tenantIdClaim, out var tenantId))
+                await _nitaqatService.UpdateTenantColorAsync(tenantId);
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // ── POST: /CompanyAdmin/Employees/Delete ────────────────
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var employee = await _uow.Employees.GetByIdAsync(id);
+            if (employee == null) return NotFound();
+
+            employee.IsDeleted = true;
+            employee.DeletedBy = User.FindFirst("FullName")?.Value ?? "system";
+            employee.DeletedAt = DateTime.UtcNow;
+
+            _uow.Employees.Update(employee);
+            await _uow.SaveChangesAsync();
+
+            TempData["Success"] = $"تم حذف الموظف {employee.FullNameAr}";
+
+            var tenantIdClaim = User.FindFirst("TenantId")?.Value;
+            if (Guid.TryParse(tenantIdClaim, out var tenantId))
+                await _nitaqatService.UpdateTenantColorAsync(tenantId);
 
             return RedirectToAction(nameof(Index));
         }
