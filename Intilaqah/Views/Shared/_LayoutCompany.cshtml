@@ -1,14 +1,20 @@
 @using Intilaqah.Data
+@using Intilaqah.Models
 @inject ApplicationDbContext DbContext
 @{
     string companyName = "المنشأة";
     int employeeCount = 0;
+    int pendingLeavesCount = 0;
     var tenantIdClaim = User.FindFirst("TenantId")?.Value;
     if (Guid.TryParse(tenantIdClaim, out var tenantId))
     {
         var tenant = DbContext.Tenants.Find(tenantId);
         if (tenant != null) companyName = tenant.Name;
         employeeCount = DbContext.Employees.Count(e => e.TenantId == tenantId && !e.IsDeleted);
+        pendingLeavesCount = DbContext.LeaveRequests.Count(l =>
+            l.TenantId == tenantId
+            && l.Status == LeaveRequestStatus.Pending
+            && !l.IsDeleted);
     }
 }
 <!DOCTYPE html>
@@ -113,7 +119,15 @@
             <li class="nav-item"><a class="nav-link" href="/CompanyAdmin/Employees"><i class="ti ti-users me-2"></i>الموظفين <span class="badge bg-danger ms-auto">@employeeCount</span></a></li>
             <li class="nav-item"><a class="nav-link" href="/CompanyAdmin/Shifts"><i class="ti ti-clock-cog me-2"></i>الورديات</a></li>
             <li class="nav-item"><a class="nav-link" href="/CompanyAdmin/Attendance"><i class="ti ti-clock me-2"></i>الحضور والانصراف</a></li>
-            <li class="nav-item"><a class="nav-link" href="/CompanyAdmin/Leaves"><i class="ti ti-calendar-off me-2"></i>الإجازات <span class="badge bg-warning ms-auto">0</span></a></li>
+            <li class="nav-item">
+                <a class="nav-link" href="/CompanyAdmin/Leaves">
+                    <i class="ti ti-calendar-off me-2"></i>الإجازات
+                    @if (pendingLeavesCount > 0)
+                    {
+                        <span class="badge bg-warning ms-auto">@pendingLeavesCount</span>
+                    }
+                </a>
+            </li>
             <li class="nav-item"><a class="nav-link" href="/CompanyAdmin/Violations"><i class="ti ti-alert-triangle me-2"></i>سجل المخالفات</a></li>
             <li class="nav-item"><a class="nav-link" href="/CompanyAdmin/ViolationRules"><i class="ti ti-gavel me-2"></i>لائحة الجزاءات</a></li>
             <li class="nav-item"><a class="nav-link" href="/CompanyAdmin/Payroll"><i class="ti ti-cash me-2"></i>مسير الرواتب <span class="badge bg-danger ms-auto">!</span></a></li>

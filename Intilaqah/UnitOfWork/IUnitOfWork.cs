@@ -13,6 +13,7 @@ namespace Intilaqah.UnitOfWork
         IContractRepository   Contracts   { get; }
         IShiftRepository Shifts { get; }
         IShiftAssignmentRepository ShiftAssignments { get; }
+        ILeaveRequestRepository LeaveRequests { get; }
         IAttendanceRepository Attendance { get; }
         IEmployeeBankAccountRepository EmployeeBankAccounts { get; }
         IViolationRuleRepository   ViolationRules   { get; }

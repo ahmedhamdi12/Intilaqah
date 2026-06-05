@@ -1,0 +1,129 @@
+@{
+    ViewData["Title"] = "خطاب تعريف بالراتب";
+    var employee = ViewBag.Employee as Intilaqah.Models.Employee;
+    var contract = ViewBag.Contract as Intilaqah.Models.Contract;
+    var tenant   = ViewBag.Tenant   as Intilaqah.Models.Tenant;
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">خطاب تعريف بالراتب</h1>
+    </div>
+    <div class="page-actions">
+        <button onclick="window.print()" class="btn-il btn-il-outline">
+            <i class="ti ti-printer"></i> طباعة
+        </button>
+        <a href="/Employee/Dashboard" class="btn-il btn-il-outline">
+            <i class="ti ti-arrow-right"></i> رجوع
+        </a>
+    </div>
+</div>
+
+<div class="il-card" id="certificate-print"
+     style="max-width:800px;margin:0 auto;padding:40px;line-height:2">
+
+    @* Header *@
+    <div style="display:flex;justify-content:space-between;
+                align-items:center;border-bottom:2px solid #000;
+                padding-bottom:20px;margin-bottom:30px">
+        <div>
+            <h2 style="margin:0;color:var(--il-primary)">
+                @tenant?.Name
+            </h2>
+            <div style="font-size:14px;color:var(--il-muted)">
+                سجل تجاري: @tenant?.CommercialRegNo
+            </div>
+        </div>
+        <div style="text-align:left">
+            <div style="font-size:14px">التاريخ: @ViewBag.IssueDate</div>
+            <div style="font-size:14px">الموافق: @DateTime.Today.ToString("dd/MM/yyyy")</div>
+        </div>
+    </div>
+
+    @* Title *@
+    <h3 style="text-align:center;font-weight:700;margin-bottom:40px">
+        خطاب تعريف بالراتب
+    </h3>
+
+    @* Body *@
+    <div style="font-size:16px;text-align:justify">
+        <p>إلى من يهمه الأمر،</p>
+        <p>
+            تشهد شركة / مؤسسة <strong>@tenant?.Name</strong>
+            بأن الموظف <strong>@employee?.FullNameAr</strong>،
+            سعودي الجنسية، ويحمل هوية وطنية رقم
+            <strong>@employee?.NationalId</strong>،
+            يعمل لدينا بمسمى <strong>@employee?.JobTitle</strong>،
+            منذ تاريخ <strong>@employee?.HireDate.ToString("dd/MM/yyyy")</strong>
+            ولا يزال على رأس عمله حتى تاريخ هذا الخطاب.
+        </p>
+
+        <p>ويتقاضى الموظف الرواتب والبدلات التالية شهرياً:</p>
+        <ul style="list-style-type:none;padding:0;margin-right:20px">
+            <li>
+                - الراتب الأساسي:
+                <strong>@contract?.BasicSalary.ToString("N0") ر.س</strong>
+            </li>
+            @if (contract?.HousingAllowance > 0)
+            {
+                <li>
+                    - بدل السكن:
+                    <strong>@contract.HousingAllowance.ToString("N0") ر.س</strong>
+                </li>
+            }
+            @if (contract?.TransportAllowance > 0)
+            {
+                <li>
+                    - بدل النقل:
+                    <strong>@contract.TransportAllowance.ToString("N0") ر.س</strong>
+                </li>
+            }
+            @if (contract?.OtherAllowances > 0)
+            {
+                <li>
+                    - بدلات أخرى:
+                    <strong>@contract.OtherAllowances.ToString("N0") ر.س</strong>
+                </li>
+            }
+            <li style="margin-top:10px;font-weight:700">
+                - إجمالي الراتب:
+                <strong>
+                    @((contract?.BasicSalary + contract?.HousingAllowance
+                     + contract?.TransportAllowance + contract?.OtherAllowances)
+                     ?.ToString("N0")) ر.س
+                </strong>
+            </li>
+        </ul>
+
+        <p style="margin-top:30px">
+            وقد أُعطي هذا الخطاب بناءً على طلبه دون أدنى مسؤولية مالية أو
+            قانونية على الشركة تجاه الغير.
+        </p>
+
+        <p>وتفضلوا بقبول فائق التحية والتقدير،</p>
+    </div>
+
+    @* Signature *@
+    <div style="margin-top:60px;display:flex;justify-content:space-between">
+        <div style="text-align:center">
+            <strong>الختم الرسمي</strong>
+        </div>
+        <div style="text-align:center">
+            <strong>المدير المباشر / الموارد البشرية</strong>
+            <br /><br />
+            التوقيع: ____________________
+        </div>
+    </div>
+
+</div>
+
+@section Styles {
+<style>
+@@media print {
+    .il-topbar, .il-sidebar, .il-page-header, .btn-il { display: none !important; }
+    .il-main { margin: 0 !important; padding: 0 !important; }
+    #certificate-print { box-shadow: none !important; border: none !important; }
+    body { background: #fff !important; }
+}
+</style>
+}

@@ -1,0 +1,223 @@
+@{
+    ViewData["Title"] = "كشف الراتب";
+    var slip      = Model as Intilaqah.Models.PaySlip;
+    var run       = ViewBag.Run       as Intilaqah.Models.PayrollRun;
+    var employee  = ViewBag.Employee  as Intilaqah.Models.Employee;
+    var contract  = ViewBag.Contract  as Intilaqah.Models.Contract;
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">كشف راتب — @ViewBag.MonthName</h1>
+    </div>
+    <div class="page-actions">
+        <button onclick="window.print()"
+                class="btn-il btn-il-outline">
+            <i class="ti ti-printer"></i> طباعة
+        </button>
+        <a href="/Employee/Payslips" class="btn-il btn-il-outline">
+            <i class="ti ti-arrow-right"></i> رجوع
+        </a>
+    </div>
+</div>
+
+<div class="il-card" id="payslip-print">
+    @* Header *@
+    <div style="text-align:center;border-bottom:1px solid var(--il-border);
+                padding-bottom:16px;margin-bottom:20px">
+        <div style="font-size:20px;font-weight:700;color:var(--il-primary)">
+            كشف راتب
+        </div>
+        <div style="font-size:14px;color:var(--il-muted)">
+            @ViewBag.MonthName
+        </div>
+    </div>
+
+    @* Employee Info *@
+    <div class="row g-3 mb-4">
+        <div class="col-6">
+            <table style="width:100%;font-size:13.5px">
+                <tr>
+                    <td style="color:var(--il-muted);padding:4px 0;width:40%">
+                        الاسم:
+                    </td>
+                    <td><strong>@employee?.FullNameAr</strong></td>
+                </tr>
+                <tr>
+                    <td style="color:var(--il-muted);padding:4px 0">
+                        الرقم الوظيفي:
+                    </td>
+                    <td>@employee?.EmployeeCode</td>
+                </tr>
+                <tr>
+                    <td style="color:var(--il-muted);padding:4px 0">
+                        المسمى الوظيفي:
+                    </td>
+                    <td>@employee?.JobTitle</td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-6">
+            <table style="width:100%;font-size:13.5px">
+                <tr>
+                    <td style="color:var(--il-muted);padding:4px 0;width:40%">
+                        أيام الحضور:
+                    </td>
+                    <td>@slip?.PresentDays يوم</td>
+                </tr>
+                <tr>
+                    <td style="color:var(--il-muted);padding:4px 0">
+                        أيام الغياب:
+                    </td>
+                    <td>@slip?.AbsentDays يوم</td>
+                </tr>
+                <tr>
+                    <td style="color:var(--il-muted);padding:4px 0">
+                        التأخر:
+                    </td>
+                    <td>@slip?.TotalLateMinutes دقيقة</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    @* Earnings & Deductions *@
+    <div class="row g-3">
+        <div class="col-6">
+            <div style="background:var(--il-bg);border-radius:9px;padding:14px">
+                <div style="font-size:13px;font-weight:700;color:var(--il-success);
+                            margin-bottom:10px">الاستحقاقات</div>
+                <table style="width:100%;font-size:13px">
+                    <tr>
+                        <td style="padding:4px 0;color:var(--il-muted)">
+                            الراتب الأساسي
+                        </td>
+                        <td style="text-align:left">
+                            @slip?.BasicSalary.ToString("N0")
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:4px 0;color:var(--il-muted)">
+                            بدل السكن
+                        </td>
+                        <td style="text-align:left">
+                            @slip?.HousingAllowance.ToString("N0")
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:4px 0;color:var(--il-muted)">
+                            بدل النقل
+                        </td>
+                        <td style="text-align:left">
+                            @slip?.TransportAllowance.ToString("N0")
+                        </td>
+                    </tr>
+                    @if (slip?.OvertimeAmount > 0)
+                    {
+                        <tr>
+                            <td style="padding:4px 0;color:var(--il-muted)">
+                                بدل الإضافي
+                            </td>
+                            <td style="text-align:left;color:var(--il-success)">
+                                +@slip.OvertimeAmount.ToString("N0")
+                            </td>
+                        </tr>
+                    }
+                    <tr style="border-top:1px solid var(--il-border)">
+                        <td style="padding:6px 0;font-weight:700">
+                            الإجمالي
+                        </td>
+                        <td style="text-align:left;font-weight:700;
+                                   color:var(--il-success)">
+                            @slip?.GrossSalary.ToString("N0") ر.س
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-6">
+            <div style="background:var(--il-bg);border-radius:9px;padding:14px">
+                <div style="font-size:13px;font-weight:700;color:var(--il-danger);
+                            margin-bottom:10px">الاستقطاعات</div>
+                <table style="width:100%;font-size:13px">
+                    @if (slip?.LateDeduction > 0)
+                    {
+                        <tr>
+                            <td style="padding:4px 0;color:var(--il-muted)">
+                                خصم التأخر
+                            </td>
+                            <td style="text-align:left;color:var(--il-danger)">
+                                -@slip.LateDeduction.ToString("N0")
+                            </td>
+                        </tr>
+                    }
+                    @if (slip?.AbsenceDeduction > 0)
+                    {
+                        <tr>
+                            <td style="padding:4px 0;color:var(--il-muted)">
+                                خصم الغياب
+                            </td>
+                            <td style="text-align:left;color:var(--il-danger)">
+                                -@slip.AbsenceDeduction.ToString("N0")
+                            </td>
+                        </tr>
+                    }
+                    @if (slip?.ViolationDeduction > 0)
+                    {
+                        <tr>
+                            <td style="padding:4px 0;color:var(--il-muted)">
+                                خصم المخالفات
+                            </td>
+                            <td style="text-align:left;color:var(--il-danger)">
+                                -@slip.ViolationDeduction.ToString("N0")
+                            </td>
+                        </tr>
+                    }
+                    @if (slip?.AdvanceDeduction > 0)
+                    {
+                        <tr>
+                            <td style="padding:4px 0;color:var(--il-muted)">
+                                خصم السلفة
+                            </td>
+                            <td style="text-align:left;color:var(--il-danger)">
+                                -@slip.AdvanceDeduction.ToString("N0")
+                            </td>
+                        </tr>
+                    }
+                    <tr style="border-top:1px solid var(--il-border)">
+                        <td style="padding:6px 0;font-weight:700">
+                            إجمالي الخصومات
+                        </td>
+                        <td style="text-align:left;font-weight:700;
+                                   color:var(--il-danger)">
+                            -@slip?.TotalDeductions.ToString("N0") ر.س
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    @* Net Salary *@
+    <div style="background:var(--il-primary);color:#fff;border-radius:9px;
+                padding:16px;margin-top:16px;
+                display:flex;justify-content:space-between;
+                align-items:center">
+        <div style="font-size:15px;font-weight:600">صافي الراتب المستحق</div>
+        <div style="font-size:26px;font-weight:700">
+            @slip?.NetSalary.ToString("N0") ر.س
+        </div>
+    </div>
+</div>
+
+@section Styles {
+<style>
+@@media print {
+    .il-topbar, .il-sidebar, .il-page-header .page-actions,
+    .btn-il { display: none !important; }
+    .il-main { margin: 0 !important; padding: 0 !important; }
+    #payslip-print { box-shadow: none !important; border: none !important; }
+}
+</style>
+}

@@ -16,6 +16,12 @@
         <a href="/CompanyAdmin/Employees" class="btn-il btn-il-outline">
             <i class="ti ti-arrow-right"></i> عودة للقائمة
         </a>
+        @if (!string.IsNullOrEmpty(emp?.UserId))
+        {
+            <a href="/CompanyAdmin/Employees/ResetPassword/@emp?.Id" class="btn-il btn-il-outline" style="color:var(--il-danger);border-color:var(--il-danger)">
+                <i class="ti ti-key"></i> إعادة تعيين كلمة المرور
+            </a>
+        }
         <a href="/CompanyAdmin/Employees/Edit/@emp?.Id" class="btn-il btn-il-primary">
             <i class="ti ti-edit"></i> تعديل البيانات
         </a>

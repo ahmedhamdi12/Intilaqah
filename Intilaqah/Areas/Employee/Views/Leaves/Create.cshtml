@@ -1,0 +1,122 @@
+@model Intilaqah.Models.ViewModels.Employee.LeaveRequestCreateVM
+@{
+    ViewData["Title"] = "طلب إجازة جديدة";
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">طلب إجازة جديدة</h1>
+    </div>
+    <div class="page-actions">
+        <a href="/Employee/Leaves" class="btn-il btn-il-outline">
+            <i class="ti ti-arrow-right"></i> رجوع
+        </a>
+    </div>
+</div>
+
+@* Leave balance *@
+<div class="il-card mb-3"
+     style="border-right:3px solid var(--il-info);background:#eff6ff">
+    <div style="font-size:13px;color:#1e40af">
+        <i class="ti ti-info-circle" style="margin-left:5px"></i>
+        رصيد الإجازة السنوية المتبقي:
+        <strong>@Model.RemainingAnnualDays يوم</strong>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="il-card">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label asp-for="LeaveType" class="il-form-label"></label>
+                    <select asp-for="LeaveType" class="il-form-control">
+                        <option value="Annual">إجازة سنوية</option>
+                        <option value="Sick">إجازة مرضية</option>
+                        <option value="Emergency">إجازة طارئة</option>
+                        <option value="Unpaid">إجازة بدون راتب</option>
+                        <option value="Maternity">إجازة أمومة</option>
+                        <option value="Hajj">إجازة حج</option>
+                    </select>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-6">
+                        <label asp-for="StartDate" class="il-form-label"></label>
+                        <input asp-for="StartDate" type="date"
+                               class="il-form-control"
+                               min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")"
+                               id="startDate"
+                               onchange="calcDays()" />
+                        <span asp-validation-for="StartDate"
+                              class="text-danger" style="font-size:12px"></span>
+                    </div>
+                    <div class="col-6">
+                        <label asp-for="EndDate" class="il-form-label"></label>
+                        <input asp-for="EndDate" type="date"
+                               class="il-form-control"
+                               id="endDate"
+                               onchange="calcDays()" />
+                        <span asp-validation-for="EndDate"
+                              class="text-danger" style="font-size:12px"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="il-form-label">المدة التقريبية</label>
+                    <div id="days-preview"
+                         style="padding:8px 12px;background:var(--il-bg);
+                                border-radius:8px;font-size:13.5px;
+                                color:var(--il-muted)">
+                        اختر التواريخ لحساب الأيام
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Reason" class="il-form-label"></label>
+                    <textarea asp-for="Reason" class="il-form-control"
+                              rows="3"
+                              placeholder="اختياري — ذكر السبب يساعد في الموافقة السريعة">
+                    </textarea>
+                </div>
+
+                <div class="d-flex gap-2 justify-content-end">
+                    <a href="/Employee/Leaves"
+                       class="btn-il btn-il-outline">إلغاء</a>
+                    <button type="submit" class="btn-il btn-il-primary">
+                        <i class="ti ti-send"></i> تقديم الطلب
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<partial name="_ValidationScriptsPartial" />
+<script>
+function calcDays() {
+    const s = document.getElementById('startDate').value;
+    const e = document.getElementById('endDate').value;
+    if (!s || !e) return;
+
+    const start = new Date(s);
+    const end   = new Date(e);
+    if (end < start) {
+        document.getElementById('days-preview').textContent =
+            'تاريخ النهاية يجب أن يكون بعد البداية';
+        return;
+    }
+
+    let days = 0;
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        if (d.getDay() !== 5 && d.getDay() !== 6) days++;
+        // 5=Friday, 6=Saturday (weekend in Saudi)
+    }
+    document.getElementById('days-preview').innerHTML =
+        `<strong style="color:var(--il-primary)">${days}</strong> يوم عمل`;
+}
+</script>
+}

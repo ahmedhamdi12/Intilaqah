@@ -49,6 +49,13 @@
                               class="text-danger" style="font-size:12px"></span>
                     </div>
                     <div class="col-md-6">
+                        <label asp-for="Email" class="il-form-label"></label>
+                        <input asp-for="Email" class="il-form-control"
+                               placeholder="employee@company.com" dir="ltr" />
+                        <span asp-validation-for="Email"
+                              class="text-danger" style="font-size:12px"></span>
+                    </div>
+                    <div class="col-md-6">
                         <label asp-for="Nationality" class="il-form-label"></label>
                         <select asp-for="Nationality"
                                 asp-items="Model.Nationalities"

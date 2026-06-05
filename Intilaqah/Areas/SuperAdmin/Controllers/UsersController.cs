@@ -97,9 +97,10 @@ namespace Intilaqah.Areas.SuperAdmin.Controllers
             }
 
             ViewBag.Tenant = tenant;
-            ViewBag.CurrentCount = users.Count;
+            var adminCount = vmList.Count(v => v.RoleName != DbSeeder.RoleEmployee);
+            ViewBag.CurrentCount = adminCount;
             ViewBag.MaxUsers = tenant.Plan?.MaxUsers ?? 0;
-            ViewBag.CanAddMore = users.Count < (tenant.Plan?.MaxUsers ?? 0);
+            ViewBag.CanAddMore = adminCount < (tenant.Plan?.MaxUsers ?? 0);
 
             return View(vmList);
         }
@@ -109,12 +110,16 @@ namespace Intilaqah.Areas.SuperAdmin.Controllers
             var tenant = await _uow.Tenants.GetByIdWithPlanAsync(tenantId);
             if (tenant == null) return NotFound();
 
-            var currentCount = _userManager.Users.Count(u => u.TenantId == tenantId);
+            var tenantUsers = _userManager.Users.Where(u => u.TenantId == tenantId).ToList();
+            var adminCount = 0;
+            foreach(var u in tenantUsers) {
+                if (!await _userManager.IsInRoleAsync(u, DbSeeder.RoleEmployee)) adminCount++;
+            }
             var maxUsers = tenant.Plan?.MaxUsers ?? 0;
 
-            if (currentCount >= maxUsers)
+            if (adminCount >= maxUsers)
             {
-                TempData["Error"] = $"وصلت الشركة للحد الأقصى من المستخدمين ({maxUsers} مستخدم). يجب ترقية الباقة أولاً.";
+                TempData["Error"] = $"وصلت الشركة للحد الأقصى من المستخدمين الإداريين ({maxUsers} مستخدم). يجب ترقية الباقة أولاً.";
                 return RedirectToAction("CompanyUsers", new { tenantId });
             }
 
@@ -122,7 +127,7 @@ namespace Intilaqah.Areas.SuperAdmin.Controllers
             {
                 TenantId = tenantId,
                 CompanyName = tenant.Name,
-                CurrentUserCount = currentCount,
+                CurrentUserCount = adminCount,
                 MaxUsers = maxUsers
             };
             return View(vm);
@@ -132,15 +137,19 @@ namespace Intilaqah.Areas.SuperAdmin.Controllers
         public async Task<IActionResult> Invite(InviteUserVM model)
         {
             // Re-check limit
-            var currentCount = _userManager.Users.Count(u => u.TenantId == model.TenantId);
+            var tenantUsers = _userManager.Users.Where(u => u.TenantId == model.TenantId).ToList();
+            var adminCount = 0;
+            foreach(var u in tenantUsers) {
+                if (!await _userManager.IsInRoleAsync(u, DbSeeder.RoleEmployee)) adminCount++;
+            }
             var tenant = await _uow.Tenants.GetByIdWithPlanAsync(model.TenantId);
             var maxUsers = tenant?.Plan?.MaxUsers ?? 0;
 
-            if (currentCount >= maxUsers)
+            if (model.RoleName != DbSeeder.RoleEmployee && adminCount >= maxUsers)
             {
-                ModelState.AddModelError("", "وصلت الشركة للحد الأقصى من المستخدمين.");
+                ModelState.AddModelError("", "وصلت الشركة للحد الأقصى من المستخدمين الإداريين.");
                 model.CompanyName = tenant?.Name ?? "";
-                model.CurrentUserCount = currentCount;
+                model.CurrentUserCount = adminCount;
                 model.MaxUsers = maxUsers;
                 return View(model);
             }
@@ -150,7 +159,7 @@ namespace Intilaqah.Areas.SuperAdmin.Controllers
             {
                 ModelState.AddModelError("Email", "البريد الإلكتروني مستخدم مسبقاً");
                 model.CompanyName = tenant?.Name ?? "";
-                model.CurrentUserCount = currentCount;
+                model.CurrentUserCount = adminCount;
                 model.MaxUsers = maxUsers;
                 return View(model);
             }
@@ -183,7 +192,7 @@ namespace Intilaqah.Areas.SuperAdmin.Controllers
                     ModelState.AddModelError("", msg);
                 }
                 model.CompanyName = tenant?.Name ?? "";
-                model.CurrentUserCount = currentCount;
+                model.CurrentUserCount = adminCount;
                 model.MaxUsers = maxUsers;
                 return View(model);
             }

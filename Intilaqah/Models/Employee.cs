@@ -24,5 +24,9 @@ namespace Intilaqah.Models
         public ICollection<Document> Documents { get; set; } = [];
         public Department?           Department { get; set; }
         public ICollection<Contract> Contracts  { get; set; } = [];
+        public ICollection<LeaveRequest> LeaveRequests { get; set; } = [];
+        
+        public string? Phone { get; set; }
+        public string? ProfilePicturePath { get; set; }
     }
 }

@@ -1,58 +1,233 @@
+@model Intilaqah.Models.ViewModels.Employee.EmployeeDashboardVM
 @{
-    ViewData["Title"] = "الرئيسية";
+    ViewData["Title"] = "لوحتي";
 }
 
-<h4 class="mb-4 fw-bold">مرحباً @ViewBag.UserFullName 👋</h4>
-
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="il-kpi">
-            <h6 class="text-muted">الرصيد المتبقي للإجازات</h6>
-            <div class="d-flex justify-content-between align-items-center">
-                <h3 class="mb-0 text-primary">21 يوم</h3>
-                <i class="ti ti-beach text-primary" style="font-size: 2rem;"></i>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="il-kpi">
-            <h6 class="text-muted">آخر راتب مودع</h6>
-            <div class="d-flex justify-content-between align-items-center">
-                <h3 class="mb-0 text-success">—</h3>
-                <i class="ti ti-receipt text-success" style="font-size: 2rem;"></i>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="il-kpi">
-            <h6 class="text-muted">وثائق تحتاج تحديث</h6>
-            <div class="d-flex justify-content-between align-items-center">
-                <h3 class="mb-0 text-warning">0</h3>
-                <i class="ti ti-id text-warning" style="font-size: 2rem;"></i>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="il-kpi">
-            <h6 class="text-muted">سلف قيد الطلب</h6>
-            <div class="d-flex justify-content-between align-items-center">
-                <h3 class="mb-0 text-secondary">0</h3>
-                <i class="ti ti-coin text-secondary" style="font-size: 2rem;"></i>
-            </div>
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">مرحباً، @Model.FullNameAr 👋</h1>
+        <div class="page-subtitle">
+            @Model.EmployeeCode — @Model.JobTitle — @Model.Department
         </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-12">
-        <div class="il-card p-4">
+@* Today's Attendance *@
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="il-kpi">
+            <div class="kpi-top">
+                <div class="kpi-icon @(Model.TodayStatus == null ? "amber" :
+                    Model.TodayStatus == Intilaqah.Models.AttendanceStatus.Present
+                        || Model.TodayStatus == Intilaqah.Models.AttendanceStatus.Late
+                        ? "green" : "red")">
+                    <i class="ti ti-clock-check"></i>
+                </div>
+            </div>
+            <div class="kpi-value" style="font-size:18px">
+                @(Model.TodayCheckIn.HasValue
+                    ? Model.TodayCheckIn.Value.ToString("hh:mm tt")
+                    : "—")
+            </div>
+            <div class="kpi-label">دخول اليوم</div>
+            <div class="kpi-sub">
+                @(Model.TodayStatus == null ? "لم يُسجَّل بعد" :
+                  Model.TodayStatus == Intilaqah.Models.AttendanceStatus.Present ? "حاضر ✓" :
+                  Model.TodayStatus == Intilaqah.Models.AttendanceStatus.Late ? "متأخر ⚠" :
+                  Model.TodayStatus == Intilaqah.Models.AttendanceStatus.Absent ? "غائب" :
+                  "إجازة")
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <a href="/Employee/Leaves" class="text-decoration-none">
+            <div class="il-kpi">
+                <div class="kpi-top">
+                    <div class="kpi-icon blue">
+                        <i class="ti ti-calendar"></i>
+                    </div>
+                    @if (Model.PendingLeaveRequests > 0)
+                    {
+                        <span class="kpi-trend warn">
+                            @Model.PendingLeaveRequests معلّق
+                        </span>
+                    }
+                </div>
+                <div class="kpi-value">@Model.RemainingLeaveDays</div>
+                <div class="kpi-label">أيام إجازة متبقية</div>
+                <div class="kpi-sub">
+                    مستخدم: @Model.UsedLeaveDays من @Model.AnnualLeaveDays
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <a href="/Employee/Payslips" class="text-decoration-none">
+            <div class="il-kpi">
+                <div class="kpi-top">
+                    <div class="kpi-icon green">
+                        <i class="ti ti-receipt"></i>
+                    </div>
+                </div>
+                @if (Model.LastNetSalary.HasValue)
+                {
+                    <div class="kpi-value" style="font-size:20px">
+                        @Model.LastNetSalary.Value.ToString("N0")
+                    </div>
+                    <div class="kpi-label">آخر راتب (ر.س)</div>
+                    <div class="kpi-sub">@Model.LastPayslipMonth</div>
+                }
+                else
+                {
+                    <div class="kpi-value">—</div>
+                    <div class="kpi-label">لا توجد مسيرات بعد</div>
+                }
+            </div>
+        </a>
+    </div>
+
+    <div class="col-6 col-lg-3">
+        <a href="/Employee/Documents" class="text-decoration-none">
+            <div class="il-kpi">
+                <div class="kpi-top">
+                    <div class="kpi-icon @(Model.ExpiringDocumentsCount > 0
+                        ? "red" : "green")">
+                        <i class="ti ti-file-certificate"></i>
+                    </div>
+                </div>
+                <div class="kpi-value @(Model.ExpiringDocumentsCount > 0
+                    ? "text-danger-il" : "")">
+                    @Model.ExpiringDocumentsCount
+                </div>
+                <div class="kpi-label">وثائق تنتهي قريباً</div>
+                <div class="kpi-sub">خلال 90 يوم</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="row g-3">
+
+    @* Quick Actions *@
+    <div class="col-md-4">
+        <div class="il-card h-100">
             <div class="il-card-header">
-                <h5 class="mb-0 fw-bold">آخر الإشعارات</h5>
+                <h2 class="card-title">
+                    <i class="ti ti-bolt"></i> إجراءات سريعة
+                </h2>
             </div>
-            <div class="text-center py-5">
-                <i class="ti ti-bell-ringing text-muted mb-2" style="font-size: 3rem; opacity: 0.5;"></i>
-                <h5 class="text-muted">قريباً</h5>
+            <div style="display:flex;flex-direction:column;gap:8px">
+                <a href="/Employee/Leaves/Create"
+                   class="btn-il btn-il-outline d-flex align-items-center gap-2">
+                    <i class="ti ti-calendar-plus"></i> طلب إجازة
+                </a>
+                <a href="/Employee/Payslips"
+                   class="btn-il btn-il-outline d-flex align-items-center gap-2">
+                    <i class="ti ti-receipt"></i> مسيراتي
+                </a>
+                <a href="/Employee/Certificates/SalaryCertificate"
+                   class="btn-il btn-il-outline d-flex align-items-center gap-2">
+                    <i class="ti ti-award"></i> خطاب تعريف بالراتب
+                </a>
+                <a href="/Employee/Profile"
+                   class="btn-il btn-il-outline d-flex align-items-center gap-2">
+                    <i class="ti ti-user"></i> ملفي الشخصي
+                </a>
             </div>
+        </div>
+    </div>
+
+    @* Document Alerts *@
+    <div class="col-md-4">
+        <div class="il-card h-100">
+            <div class="il-card-header">
+                <h2 class="card-title">
+                    <i class="ti ti-file-alert"
+                       style="color:var(--il-danger)"></i>
+                    تنبيهات الوثائق
+                </h2>
+            </div>
+            @if (!Model.ExpiringDocuments.Any())
+            {
+                <div class="text-center py-4"
+                     style="color:var(--il-success)">
+                    <i class="ti ti-circle-check"
+                       style="font-size:36px;opacity:.6"></i>
+                    <div class="mt-2" style="font-size:13px">
+                        جميع وثائقك سارية ✓
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div style="display:flex;flex-direction:column;gap:6px">
+                    @foreach (var doc in Model.ExpiringDocuments)
+                    {
+                        <div class="il-alert-item">
+                            <div class="alert-dot @(doc.DaysRemaining <= 30
+                                ? "red" : doc.DaysRemaining <= 60
+                                ? "orange" : "blue")"></div>
+                            <div class="alert-body">
+                                <div class="alert-title">@doc.DocType</div>
+                                <div class="alert-sub">
+                                    @(doc.DaysRemaining <= 0
+                                        ? "منتهية!"
+                                        : $"تنتهي خلال {doc.DaysRemaining} يوم")
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    @* Contract Alert *@
+    <div class="col-md-4">
+        <div class="il-card h-100">
+            <div class="il-card-header">
+                <h2 class="card-title">
+                    <i class="ti ti-file-text"></i> عقد العمل
+                </h2>
+            </div>
+            @if (Model.ContractEndDate.HasValue)
+            {
+                var daysLeft = (Model.ContractEndDate.Value - DateTime.Today).Days;
+                <div class="text-center py-3">
+                    <div style="font-size:13px;color:var(--il-muted);
+                                margin-bottom:6px">
+                        تاريخ انتهاء العقد
+                    </div>
+                    <div style="font-size:18px;font-weight:700;
+                        color:@(daysLeft <= 30 ? "var(--il-danger)"
+                               : daysLeft <= 90 ? "var(--il-warning)"
+                               : "var(--il-text)")">
+                        @Model.ContractEndDate.Value.ToString("dd/MM/yyyy")
+                    </div>
+                    @if (Model.ContractExpiring)
+                    {
+                        <div class="il-badge danger mt-2">
+                            ينتهي خلال @daysLeft يوم
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="font-size:12px;color:var(--il-muted);
+                                    margin-top:6px">
+                            @daysLeft يوم متبقي
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-3"
+                     style="color:var(--il-muted);font-size:13px">
+                    عقد غير محدد المدة
+                </div>
+            }
         </div>
     </div>
 </div>

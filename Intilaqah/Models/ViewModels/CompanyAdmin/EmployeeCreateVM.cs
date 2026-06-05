@@ -20,6 +20,11 @@ namespace Intilaqah.Models.ViewModels.CompanyAdmin
         [Display(Name = "رقم الهوية / الإقامة")]
         public string NationalId { get; set; } = "";
 
+        [Required(ErrorMessage = "البريد الإلكتروني مطلوب")]
+        [EmailAddress(ErrorMessage = "صيغة البريد الإلكتروني غير صحيحة")]
+        [Display(Name = "البريد الإلكتروني")]
+        public string Email { get; set; } = "";
+
         [Required(ErrorMessage = "الجنسية مطلوبة")]
         [Display(Name = "الجنسية")]
         public NationalityType Nationality { get; set; }

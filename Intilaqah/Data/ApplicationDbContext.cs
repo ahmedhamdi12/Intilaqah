@@ -44,6 +44,7 @@ namespace Intilaqah.Data
         public DbSet<PaySlip>         PaySlips         => Set<PaySlip>();
         public DbSet<AuditLog>        AuditLogs        => Set<AuditLog>();
         public DbSet<Notification>    Notifications    => Set<Notification>();
+        public DbSet<LeaveRequest>    LeaveRequests    => Set<LeaveRequest>();
 
         public DbSet<Intilaqah.Models.Integration.TenantIntegrationSettings> TenantIntegrationSettings => Set<Intilaqah.Models.Integration.TenantIntegrationSettings>();
         public DbSet<Intilaqah.Models.Integration.IntegrationLog> IntegrationLogs => Set<Intilaqah.Models.Integration.IntegrationLog>();
@@ -111,6 +112,9 @@ namespace Intilaqah.Data
 
             builder.Entity<Intilaqah.Models.Integration.TenantIntegrationSettings>()
                 .HasQueryFilter(s => (TenantId == null || s.TenantId == TenantId) && !s.IsDeleted);
+
+            builder.Entity<LeaveRequest>()
+                .HasQueryFilter(l => (TenantId == null || l.TenantId == TenantId) && !l.IsDeleted);
 
             builder.Entity<Intilaqah.Models.Integration.TenantIntegrationSettings>()
                 .HasIndex(s => new { s.TenantId, s.Provider })

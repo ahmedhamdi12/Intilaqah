@@ -19,6 +19,7 @@ namespace Intilaqah.UnitOfWork
         public IContractRepository   Contracts   { get; }
         public IShiftRepository Shifts { get; }
         public IShiftAssignmentRepository ShiftAssignments { get; }
+        public ILeaveRequestRepository LeaveRequests { get; }
         public IAttendanceRepository Attendance { get; }
         public IEmployeeBankAccountRepository EmployeeBankAccounts { get; }
         public IViolationRuleRepository   ViolationRules   { get; }
@@ -42,6 +43,7 @@ namespace Intilaqah.UnitOfWork
             Contracts   = new ContractRepository(context, tenantResolver);
             Shifts = new ShiftRepository(context, tenantResolver);
             ShiftAssignments = new ShiftAssignmentRepository(context, tenantResolver);
+            LeaveRequests = new LeaveRequestRepository(context, tenantResolver);
             Attendance = new AttendanceRepository(context, tenantResolver);
             EmployeeBankAccounts = new EmployeeBankAccountRepository(context, tenantResolver);
             ViolationRules   = new ViolationRuleRepository(context, tenantResolver);

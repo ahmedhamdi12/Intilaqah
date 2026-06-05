@@ -1,0 +1,87 @@
+@{
+    ViewData["Title"] = "الملف الشخصي";
+    var employee = ViewBag.Employee as Intilaqah.Models.Employee;
+    var contract = ViewBag.Contract as Intilaqah.Models.Contract;
+    var department = ViewBag.Department as string;
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">الملف الشخصي</h1>
+    </div>
+    <div class="page-actions">
+        <a href="/Employee/Profile/Edit" class="btn-il btn-il-primary">
+            <i class="ti ti-edit"></i> تعديل بياناتي
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="il-card text-center">
+            @if (!string.IsNullOrEmpty(employee?.ProfilePicturePath))
+            {
+                <img src="/Employee/Profile/Avatar?fileName=@employee.ProfilePicturePath"
+                     alt="Profile"
+                     class="rounded-circle mb-3"
+                     style="width:120px;height:120px;object-fit:cover;border:3px solid var(--il-border)" />
+            }
+            else
+            {
+                <div class="rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center"
+                     style="width:120px;height:120px;background:var(--il-primary);color:#fff;font-size:36px;border:3px solid var(--il-border)">
+                    @employee?.FullNameAr?.Substring(0,1)
+                </div>
+            }
+            <h3 style="font-size:18px;margin-bottom:5px">@employee?.FullNameAr</h3>
+            <div style="color:var(--il-muted);font-size:14px;margin-bottom:15px">@employee?.JobTitle</div>
+            
+            <div class="il-badge blue">@department</div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="il-card mb-4">
+            <h4 class="mb-4" style="font-size:16px;color:var(--il-primary);border-bottom:1px solid var(--il-border);padding-bottom:10px">
+                <i class="ti ti-user"></i> المعلومات الشخصية
+            </h4>
+            <div class="row mb-3">
+                <div class="col-sm-4 text-muted">الاسم بالإنجليزية</div>
+                <div class="col-sm-8 fw-bold">@(string.IsNullOrEmpty(employee?.FullNameEn) ? "—" : employee.FullNameEn)</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-sm-4 text-muted">الرقم الوظيفي</div>
+                <div class="col-sm-8 fw-bold">@employee?.EmployeeCode</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-sm-4 text-muted">رقم الهوية</div>
+                <div class="col-sm-8 fw-bold">@employee?.NationalId</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-sm-4 text-muted">رقم الجوال</div>
+                <div class="col-sm-8 fw-bold">@(employee?.Phone ?? "—")</div>
+            </div>
+        </div>
+
+        <div class="il-card">
+            <h4 class="mb-4" style="font-size:16px;color:var(--il-primary);border-bottom:1px solid var(--il-border);padding-bottom:10px">
+                <i class="ti ti-briefcase"></i> معلومات العمل
+            </h4>
+            <div class="row mb-3">
+                <div class="col-sm-4 text-muted">تاريخ التعيين</div>
+                <div class="col-sm-8 fw-bold">@employee?.HireDate.ToString("dd/MM/yyyy")</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-sm-4 text-muted">نوع العقد</div>
+                <div class="col-sm-8 fw-bold">@(contract != null ? "محدد المدة" : "غير محدد المدة")</div>
+            </div>
+            @if(contract?.EndDate != null)
+            {
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">تاريخ انتهاء العقد</div>
+                    <div class="col-sm-8 fw-bold">@contract.EndDate.Value.ToString("dd/MM/yyyy")</div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

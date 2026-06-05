@@ -1,8 +1,10 @@
+using Intilaqah.Data;
 using Intilaqah.Models;
 using Intilaqah.Models.ViewModels.CompanyAdmin;
 using Intilaqah.Services;
 using Intilaqah.UnitOfWork;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -14,11 +16,13 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
     {
         private readonly IUnitOfWork _uow;
         private readonly INitaqatService _nitaqatService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public EmployeesController(IUnitOfWork uow, INitaqatService nitaqatService)
+        public EmployeesController(IUnitOfWork uow, INitaqatService nitaqatService, UserManager<ApplicationUser> userManager)
         {
             _uow = uow;
             _nitaqatService = nitaqatService;
+            _userManager = userManager;
         }
 
         // ── GET: /CompanyAdmin/Employees ──────────────────────────────
@@ -71,6 +75,14 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
             if (!ModelState.IsValid)
                 return View(await BuildCreateVM(model));
 
+            // Check duplicate Email
+            var existingUser = await _userManager.FindByEmailAsync(model.Email);
+            if (existingUser != null)
+            {
+                ModelState.AddModelError("Email", "البريد الإلكتروني مسجل مسبقاً");
+                return View(await BuildCreateVM(model));
+            }
+
             // Check duplicate NationalId
             var exists = (await _uow.Employees
                 .FindAsync(e => e.NationalId == model.NationalId))
@@ -86,8 +98,32 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
             var count = (await _uow.Employees.GetAllAsync()).Count();
             var code  = $"EMP-{(count + 1):D3}";
 
+            var tenantIdClaim = User.FindFirst("TenantId")?.Value;
+            Guid.TryParse(tenantIdClaim, out var tenantId);
+
+            // Create ApplicationUser
+            var user = new ApplicationUser
+            {
+                UserName = model.Email,
+                Email = model.Email,
+                FullName = model.FullNameAr,
+                TenantId = tenantId == Guid.Empty ? null : tenantId,
+                IsActive = true,
+                EmailConfirmed = true,
+                CreatedAt = DateTime.UtcNow
+            };
+            
+            var result = await _userManager.CreateAsync(user, "Emp@12345");
+            if (!result.Succeeded)
+            {
+                ModelState.AddModelError("Email", "حدث خطأ أثناء إنشاء حساب الدخول للموظف");
+                return View(await BuildCreateVM(model));
+            }
+            await _userManager.AddToRoleAsync(user, DbSeeder.RoleEmployee);
+
             var employee = new Intilaqah.Models.Employee
             {
+                UserId         = user.Id,
                 EmployeeCode   = code,
                 FullNameAr     = model.FullNameAr,
                 FullNameEn     = model.FullNameEn,
@@ -137,10 +173,9 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
                 await _uow.SaveChangesAsync();
             }
 
-            TempData["Success"] = $"تم إضافة الموظف {model.FullNameAr} بنجاح";
+            TempData["Success"] = $"تم إضافة الموظف {model.FullNameAr} بنجاح. كلمة المرور الافتراضية: Emp@12345";
 
-            var tenantIdClaim = User.FindFirst("TenantId")?.Value;
-            if (Guid.TryParse(tenantIdClaim, out var tenantId))
+            if (tenantId != Guid.Empty)
                 await _nitaqatService.UpdateTenantColorAsync(tenantId);
 
             return RedirectToAction(nameof(Index));
@@ -375,6 +410,62 @@ namespace Intilaqah.Areas.CompanyAdmin.Controllers
 
             TempData["Success"] = "تم تحديث البيانات البنكية للموظف بنجاح";
             return RedirectToAction(nameof(Details), new { id = model.EmployeeId });
+        }
+
+        // ── GET: /CompanyAdmin/Employees/ResetPassword/id ───────────────────
+        public async Task<IActionResult> ResetPassword(Guid id)
+        {
+            var employee = await _uow.Employees.GetByIdAsync(id);
+            if (employee == null || string.IsNullOrEmpty(employee.UserId)) return NotFound();
+
+            var vm = new Intilaqah.Models.ViewModels.SuperAdmin.ResetPasswordVM
+            {
+                UserId = employee.UserId,
+                UserName = employee.FullNameAr
+            };
+
+            return View(vm);
+        }
+
+        // ── POST: /CompanyAdmin/Employees/ResetPassword ─────────────────────
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(Intilaqah.Models.ViewModels.SuperAdmin.ResetPasswordVM model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null) return NotFound();
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, model.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                var arabicErrors = new Dictionary<string, string> {
+                    ["Passwords must be at least 8 characters."] = "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+                    ["Passwords must have at least one digit ('0'-'9')."] = "يجب أن تحتوي على رقم واحد على الأقل",
+                    ["Passwords must have at least one non alphanumeric character."] = "يجب أن تحتوي على رمز واحد على الأقل",
+                    ["Passwords must have at least one lowercase ('a'-'z')."] = "يجب أن تحتوي على حرف صغير واحد على الأقل",
+                    ["Passwords must have at least one uppercase ('A'-'Z')."] = "يجب أن تحتوي على حرف كبير واحد على الأقل"
+                };
+                foreach (var e in result.Errors)
+                {
+                    var msg = arabicErrors.GetValueOrDefault(e.Description, e.Description);
+                    ModelState.AddModelError("", msg);
+                }
+                return View(model);
+            }
+
+            var employee = (await _uow.Employees.FindAsync(e => e.UserId == user.Id)).FirstOrDefault();
+
+            TempData["Success"] = $"تم تغيير كلمة مرور {user.FullName} بنجاح";
+            if (employee != null)
+            {
+                return RedirectToAction(nameof(Details), new { id = employee.Id });
+            }
+            return RedirectToAction(nameof(Index));
         }
 
         // ── Private Helpers ───────────────────────────────────────────

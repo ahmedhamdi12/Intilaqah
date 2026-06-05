@@ -1,0 +1,203 @@
+@model IEnumerable<Intilaqah.Models.LeaveRequest>
+@{
+    ViewData["Title"] = "إدارة الإجازات";
+    var employees = ViewBag.Employees as Dictionary<Guid, string> ?? new();
+}
+
+<div class="il-page-header">
+    <div>
+        <h1 class="page-title">إدارة طلبات الإجازات</h1>
+        @if ((int)ViewBag.PendingCount > 0)
+        {
+            <div class="page-subtitle" style="color:var(--il-warning)">
+                <i class="ti ti-clock"></i>
+                @ViewBag.PendingCount طلب في انتظار المراجعة
+            </div>
+        }
+    </div>
+</div>
+
+@* Filter Tabs *@
+<div class="mb-3 d-flex gap-2 flex-wrap">
+    <button class="btn-il btn-il-outline btn-il-sm active-filter"
+            onclick="filterTable('all')" id="tab-all">
+        الكل (@Model.Count())
+    </button>
+    <button class="btn-il btn-il-outline btn-il-sm"
+            onclick="filterTable('Pending')" id="tab-Pending"
+            style="border-color:var(--il-warning);color:var(--il-warning)">
+        <i class="ti ti-clock"></i>
+        معلّقة (@Model.Count(r => r.Status == Intilaqah.Models.LeaveRequestStatus.Pending))
+    </button>
+    <button class="btn-il btn-il-outline btn-il-sm"
+            onclick="filterTable('Approved')" id="tab-Approved"
+            style="border-color:var(--il-success);color:var(--il-success)">
+        موافق (@Model.Count(r => r.Status == Intilaqah.Models.LeaveRequestStatus.Approved))
+    </button>
+    <button class="btn-il btn-il-outline btn-il-sm"
+            onclick="filterTable('Rejected')" id="tab-Rejected"
+            style="border-color:var(--il-danger);color:var(--il-danger)">
+        مرفوضة (@Model.Count(r => r.Status == Intilaqah.Models.LeaveRequestStatus.Rejected))
+    </button>
+</div>
+
+<div class="il-card">
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5" style="color:var(--il-muted)">
+            <i class="ti ti-calendar-off" style="font-size:48px;opacity:.25"></i>
+            <div class="mt-3" style="font-size:14px">لا توجد طلبات إجازة</div>
+        </div>
+    }
+    else
+    {
+        <table class="il-table" id="leaves-table">
+            <thead>
+                <tr>
+                    <th>الموظف</th>
+                    <th>نوع الإجازة</th>
+                    <th>من</th>
+                    <th>إلى</th>
+                    <th>الأيام</th>
+                    <th>السبب</th>
+                    <th>الحالة</th>
+                    <th>تاريخ الطلب</th>
+                    <th>إجراء</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var req in Model)
+                {
+                    var typeLabel = req.LeaveType switch {
+                        Intilaqah.Models.LeaveType.Annual    => "سنوية",
+                        Intilaqah.Models.LeaveType.Sick      => "مرضية",
+                        Intilaqah.Models.LeaveType.Emergency => "طارئة",
+                        Intilaqah.Models.LeaveType.Unpaid    => "بدون راتب",
+                        Intilaqah.Models.LeaveType.Maternity => "أمومة",
+                        Intilaqah.Models.LeaveType.Hajj      => "حج",
+                        _ => req.LeaveType.ToString()
+                    };
+                    var (statusLabel, statusClass) = req.Status switch {
+                        Intilaqah.Models.LeaveRequestStatus.Pending   => ("قيد المراجعة", "warning"),
+                        Intilaqah.Models.LeaveRequestStatus.Approved  => ("موافق عليها", "active"),
+                        Intilaqah.Models.LeaveRequestStatus.Rejected  => ("مرفوضة", "danger"),
+                        Intilaqah.Models.LeaveRequestStatus.Cancelled => ("ملغاة", "inactive"),
+                        _ => ("—", "inactive")
+                    };
+                    <tr data-status="@req.Status">
+                        <td>
+                            <strong>@employees.GetValueOrDefault(req.EmployeeId, "—")</strong>
+                        </td>
+                        <td>@typeLabel</td>
+                        <td>@req.StartDate.ToString("dd/MM/yyyy")</td>
+                        <td>@req.EndDate.ToString("dd/MM/yyyy")</td>
+                        <td>@req.DurationDays يوم</td>
+                        <td style="font-size:12px;color:var(--il-muted)">
+                            @(req.Reason ?? "—")
+                        </td>
+                        <td>
+                            <span class="il-badge @statusClass">@statusLabel</span>
+                        </td>
+                        <td style="font-size:12px;color:var(--il-muted)">
+                            @req.CreatedAt.ToString("dd/MM/yyyy")
+                        </td>
+                        <td>
+                            @if (req.Status == Intilaqah.Models.LeaveRequestStatus.Pending)
+                            {
+                                <div class="d-flex gap-1 flex-wrap">
+                                    @* Approve with optional notes modal *@
+                                    <button type="button"
+                                            class="btn-il btn-il-sm"
+                                            style="background:var(--il-success);color:#fff;border:none"
+                                            onclick="openReview('@req.Id', 'approve')">
+                                        <i class="ti ti-check"></i> موافقة
+                                    </button>
+                                    <button type="button"
+                                            class="btn-il btn-il-sm"
+                                            style="background:var(--il-danger);color:#fff;border:none"
+                                            onclick="openReview('@req.Id', 'reject')">
+                                        <i class="ti ti-x"></i> رفض
+                                    </button>
+                                </div>
+                            }
+                            else if (!string.IsNullOrEmpty(req.ReviewerNotes))
+                            {
+                                <span style="font-size:11px;color:var(--il-muted)"
+                                      title="@req.ReviewerNotes">
+                                    <i class="ti ti-message"></i> ملاحظة
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@* Review modal *@
+<div id="review-modal" class="il-modal-overlay" style="display:none">
+    <div class="il-modal">
+        <div class="il-modal-header">
+            <h3 id="review-modal-title">مراجعة الطلب</h3>
+            <button onclick="closeModal()" class="il-modal-close">
+                <i class="ti ti-x"></i>
+            </button>
+        </div>
+        <div class="il-modal-body">
+            <label class="il-form-label">ملاحظات (اختياري)</label>
+            <textarea id="review-notes" class="il-form-control" rows="3"
+                      placeholder="أضف ملاحظة للموظف..."></textarea>
+        </div>
+        <div class="il-modal-footer">
+            <button onclick="closeModal()" class="btn-il btn-il-outline">
+                إلغاء
+            </button>
+            <form id="review-form" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="notes" id="form-notes" />
+                <button type="submit" id="review-submit"
+                        class="btn-il btn-il-primary">
+                    تأكيد
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function filterTable(status) {
+    const rows = document.querySelectorAll('#leaves-table tbody tr');
+    rows.forEach(r => {
+        r.style.display = (status === 'all' ||
+            r.dataset.status === status) ? '' : 'none';
+    });
+}
+
+function openReview(id, action) {
+    const isApprove = action === 'approve';
+    document.getElementById('review-modal-title').textContent =
+        isApprove ? 'الموافقة على الطلب' : 'رفض الطلب';
+    document.getElementById('review-submit').style.background =
+        isApprove ? 'var(--il-success)' : 'var(--il-danger)';
+
+    const base = isApprove
+        ? '/CompanyAdmin/Leaves/Approve/'
+        : '/CompanyAdmin/Leaves/Reject/';
+    document.getElementById('review-form').action = base + id;
+    document.getElementById('review-notes').value = '';
+    document.getElementById('review-modal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('review-modal').style.display = 'none';
+}
+
+// Copy notes to hidden input on submit
+document.getElementById('review-form').addEventListener('submit', function() {
+    document.getElementById('form-notes').value =
+        document.getElementById('review-notes').value;
+});
+</script>
+}
